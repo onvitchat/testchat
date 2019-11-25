@@ -3,9 +3,12 @@ package com.example.chatapp;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,17 +36,31 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
-        firebaseAuth.signOut();
-        String loginBackground = firebaseRemoteConfig.getString("login_background");
 
-        getWindow().setStatusBarColor(Color.parseColor(loginBackground));
+//        firebaseAuth.signOut();//로그아웃 하는 부분?
+
+        String loginButtonColor = firebaseRemoteConfig.getString("login_button_color");
+
+        getWindow().setStatusBarColor(Color.parseColor(loginButtonColor)); // 맨 위에 바
 
         id = findViewById(R.id.loginactivity_edittext_id);
         password = findViewById(R.id.loginactivity_edittext_password);
         login = findViewById(R.id.loginactivity_button_login);
         signup = findViewById(R.id.loginactivity_button_signup);
 
-        login.setBackgroundColor(Color.parseColor(loginBackground));
+        login.setBackgroundColor(Color.parseColor(loginButtonColor));
+
+        password.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        password.setOnEditorActionListener(new TextView.OnEditorActionListener() { // 완료눌러도 회원가입기능되게~
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_DONE) {
+                    loginEvent();
+                }
+                return false;
+            }
+        });
+
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -52,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
 
-        signup.setBackgroundColor(Color.parseColor(loginBackground));
+        signup.setBackgroundColor(Color.parseColor(loginButtonColor));
 
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,6 +96,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     void loginEvent() {
+        if(id.getText().toString()==null || id.getText().toString().equals("") || password.getText().toString()==null || password.getText().toString().equals("")){
+            return;
+        }
         firebaseAuth.signInWithEmailAndPassword(id.getText().toString(), password.getText().toString())
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override

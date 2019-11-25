@@ -54,7 +54,7 @@ public class SplashActivity extends AppCompatActivity {
 
     void displayMessage() {
         String loginBacground = mFirebaseRemoteConfig.getString("login_background");
-        boolean caps = mFirebaseRemoteConfig.getBoolean("splash_message_caps");
+        boolean caps = mFirebaseRemoteConfig.getBoolean("splash_message_caps"); // 이거 true로 보내면 서버점검중이라고 띄울 수 있음.
         String splashMessage = mFirebaseRemoteConfig.getString("splash_message");
         linearLayout.setBackgroundColor(Color.parseColor(loginBacground));
         if (caps) {

@@ -1,11 +1,58 @@
 package com.example.chatapp.model;
 
-public class User {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class User implements Comparable, Parcelable {
     private String userName;
     private String userEmail;
     private String userPassword;
     private String userProfileImageUrl;
     private String uid;
+    private String pushToken;
+    private String comment;
+
+    public User(){
+
+    }
+
+    protected User(Parcel in) {
+        userName = in.readString();
+        userEmail = in.readString();
+        userPassword = in.readString();
+        userProfileImageUrl = in.readString();
+        uid = in.readString();
+        pushToken = in.readString();
+        comment = in.readString();
+    }
+
+    public static final Creator<User> CREATOR = new Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getPushToken() {
+        return pushToken;
+    }
+
+    public void setPushToken(String pushToken) {
+        this.pushToken = pushToken;
+    }
 
     public String getUserProfileImageUrl() {
         return userProfileImageUrl;
@@ -55,5 +102,26 @@ public class User {
                 ", userPassword='" + userPassword + '\'' +
                 ", userProfileImageUrl='" + userProfileImageUrl + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return 0;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(userName);
+        parcel.writeString(userEmail);
+        parcel.writeString(userPassword);
+        parcel.writeString(userProfileImageUrl);
+        parcel.writeString(uid);
+        parcel.writeString(pushToken);
+        parcel.writeString(comment);
     }
 }
