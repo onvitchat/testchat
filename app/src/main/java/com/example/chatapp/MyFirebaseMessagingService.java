@@ -85,6 +85,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setContentText(remoteMessage.getData().get("text"))
                         .setAutoCancel(true) // 누르면 알림 없어짐
                         .setSound(defaultSoundUri)
+                        .setVibrate(new long[] {0,0})
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setDefaults(Notification.DEFAULT_ALL)
 //                        .setFullScreenIntent(pendingIntent, true)

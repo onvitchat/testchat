@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -22,6 +23,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
@@ -760,7 +762,7 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
                                 String fileUri = taskResult.toString();
                                 final ChatModel.Comment comment = new ChatModel.Comment();
                                 comment.uid = uid;
-                                comment.message = "파일을 보냈습니다\n"+fileName+"\n"+fileUri;
+                                comment.message = "파일을 보냈습니다\n"+fileName+fileUri;
                                 comment.timestamp = date.getTime();
                                 comment.readUsers = messageReadUsers;
                                 comment.type = "file";
@@ -1134,20 +1136,26 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
 
                 }else if(newComments.get(position).type.equals("file")){
                     holder.textView_message.setVisibility(View.VISIBLE);
-                    String message = newComments.get(position).message;
-                    int a = message.lastIndexOf("https://");
-                    holder.textView_message.setText(message);
+                    final String message = newComments.get(position).message;
+                    final int lastIndex = message.lastIndexOf("https://");
+                    ClickableSpan clickableSpan = new ClickableSpan()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(message.substring(lastIndex)));
+                            startActivity(intent);
+                        }
+                    };
+                    SpannableString spannableString = new SpannableString(message.substring(0,lastIndex));
+                    spannableString.setSpan(clickableSpan, 9, lastIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    spannableString.setSpan(new UnderlineSpan(), 9, lastIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+//                    spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#FF00DD")), 9, lastIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    holder.textView_message.setText(spannableString);
+
+                    holder.textView_message.setClickable(true);
+                    holder.textView_message.setMovementMethod(LinkMovementMethod.getInstance());
                     holder.textView_message.setBackgroundResource(R.drawable.sender_message_layout);
-//                    Linkify.TransformFilter mTransform = new Linkify.TransformFilter() {
-//                        @Override public String transformUrl(Matcher match, String url) {
-//                            return "";
-//                        }
-//                    };
-//                    Pattern pattern = Pattern.compile(message.substring(9,a));
-//                    Log.d("링크", message.substring(a));
-//                    Linkify.addLinks(holder.textView_message, pattern, message.substring(a), null, mTransform);
-
-
 
                     //복사 및 공유 기능
                     longClick(holder);
