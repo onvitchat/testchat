@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -7,5 +7,40 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
+
+    <style name="AppTheme.StatusBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">#ffffff</item>
+        <!--Status Bar 글자색깔-->
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+    </style>
+
+    <style name="AppTheme.chatStatusBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">#A9BDCE</item>
+        <!--Status Bar 글자색깔-->
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+    </style>
+
+    <style name="AppTheme.actionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- set the size of action bar title . -->
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="AppTheme.pictureActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- set the size of action bar title . -->
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+    <style name="BottomNavigationView" parent="@style/TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="BottomNavigationView.Active" parent="@style/TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">10sp</item>
+    </style>
+
 
 </resources>

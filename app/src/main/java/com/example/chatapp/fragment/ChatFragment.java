@@ -4,6 +4,8 @@ import android.app.ActivityOptions;
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,81 +14,113 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
+import com.example.chatapp.MainActivity;
 import com.example.chatapp.R;
 import com.example.chatapp.chat.GroupMessageActivity;
-import com.example.chatapp.chat.MessageActivity;
+import com.example.chatapp.model.ChatList;
 import com.example.chatapp.model.ChatModel;
 import com.example.chatapp.model.User;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.TreeMap;
 
 public class ChatFragment extends Fragment {
-
+    private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
-    private ChatRecyclerViewAdapter chatRecyclerViewAdapter;
+    private ChatRecyclerViewAdapter chatRecyclerViewAdapter = new ChatRecyclerViewAdapter();
+    private AppCompatActivity activity;
+    private Toolbar chatToolbar;
+    private ValueEventListener valueEventListener;
+    private ValueEventListener countEventListener;
+    private List<ChatList> chatModels = new ArrayList<>();
+    private List<String> keys = new ArrayList<>();
+    private List<String> count = new ArrayList<>();
+    private List<String> pCount = new ArrayList<>();
+    private Map<String, Object> countMap = new HashMap<>();
+    private String uid;
+    private Map<String, User> userList = new HashMap<>();
+    public ChatFragment() {
+
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
+        chatToolbar = view.findViewById(R.id.chat_toolbar);
+        activity = (MainActivity) getActivity();
+        activity.setSupportActionBar(chatToolbar);
+        ActionBar actionBar = activity.getSupportActionBar();
+        actionBar.setTitle("단체 채팅");
         RecyclerView recyclerView = view.findViewById(R.id.chatfragment_recyclerview);
-        chatRecyclerViewAdapter = new ChatRecyclerViewAdapter();
         recyclerView.setAdapter(chatRecyclerViewAdapter);
-        chatRecyclerViewAdapter.notifyDataSetChanged();
         recyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
         return view;
     }
 
-
     class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerViewAdapter.ChatViewHolder> {
 
-        private List<ChatModel> chatModels = new ArrayList<>();
-        private List<String> keys = new ArrayList<>();
-        private String uid;
-        private ArrayList<String> toUsers = new ArrayList<>();
-
         public ChatRecyclerViewAdapter() {
-            uid = FirebaseAuth.getInstance().getCurrentUser().getUid();   // 클라이언트uid
+            uid = FirebaseAuth.getInstance().getCurrentUser().getUid();// 클라이언트uid
+            valueEventListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) { // 해당되는 chatrooms들의 키값들이 넘어옴.
+                    chatModels.clear();
+                    count.clear();
+                    keys.clear();
+                    for (final DataSnapshot item : dataSnapshot.getChildren()) {// normalChat, officerChat
+                        ChatList chatList = item.getValue(ChatList.class);
+                        chatModels.add(chatList);// 채팅방 밖에 표시할 내용들.
+                        keys.add(item.getKey());// normalChat, officerChat 채팅방 이름.
+                        count.add(chatList.getUsers().get(uid) + ""); // 안읽은 숫자.
+                        pCount.add(chatList.getUsers().size() + "");
 
-            //해당하는방접속
-            //FirebaseDatabase 중 chatroosms에 접근. chatrooms의 하위요소중 users안의 해당 uid중 값이 true인것들을 정렬시킴. 오름차순 및 사전순으로 정렬됨.
-            // => 즉, 클라이언트가 속한 채팅방들을 정렬시킨다.
-            FirebaseDatabase.getInstance().getReference().child("chatrooms").orderByChild("users/" + uid).equalTo(true)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) { // 해당되는 chatrooms들의 키값들이 넘어옴.
-                            chatModels.clear();
-                            for (DataSnapshot item : dataSnapshot.getChildren()) {
-                                chatModels.add(item.getValue(ChatModel.class));
-                                keys.add(item.getKey());
+
+                        countEventListener = new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                Log.d("채팅갯수", dataSnapshot.getChildrenCount() + "");
+                                countMap.put(item.getKey(), dataSnapshot.getChildrenCount());
                             }
-                            Collections.reverse(chatModels); // 최신순으로 정렬
-                            notifyDataSetChanged();
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
-                    });
+                            }
+                        };
+                        databaseReference.child("groupChat").child(item.getKey()).child("comments").orderByChild("existUser/" + uid).equalTo(true).addValueEventListener(countEventListener);
+
+                    }
+                    notifyDataSetChanged();
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            };
+            databaseReference.child("lastChat").addValueEventListener(valueEventListener);
         }
 
         @NonNull
@@ -98,60 +132,84 @@ public class ChatFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull final ChatRecyclerViewAdapter.ChatViewHolder holder, final int position) {
-            String toUid = null;
-            //채팅방에 있는 유저들의 uid를 가지고 옴.
-            for (String user : chatModels.get(position).users.keySet()) {
-                if (!user.equals(uid)) {
-                    toUid = user;
-                    toUsers.add(toUid);
-                }
-            }
-            final User[] user = {null};
-            FirebaseDatabase.getInstance().getReference().child("Users").child(toUid).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    //각 채팅방에 상대 사진과 이름을 표시
-                    user[0] = dataSnapshot.getValue(User.class);
-                    Glide.with(holder.itemView.getContext()).load(user[0].getUserProfileImageUrl()).apply(new RequestOptions().centerCrop()).into(holder.imageView);
-                    GradientDrawable gradientDrawable = (GradientDrawable) getContext().getDrawable(R.drawable.radius);
-                    holder.imageView.setBackground(gradientDrawable);
-                    holder.imageView.setClipToOutline(true);
-                    holder.textView_title.setText(user[0].getUserName());
-                }
+            Log.d("홀더붙는순서(채팅방)", position + "");
+            //position0번 부터 붙음
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+            holder.textView_count.setVisibility(View.INVISIBLE);
+            GradientDrawable gradientDrawable = (GradientDrawable) getContext().getDrawable(R.drawable.radius);
+            holder.imageView.setBackground(gradientDrawable);
+            holder.imageView.setClipToOutline(true);
+            holder.textView_title.setText(chatModels.get(position).getChatName());
 
-                }
-            });
+            //마지막으로 보낸 메세지
+            String lastChat = chatModels.get(position).getLastChat();
+            holder.textView_last_message.setText(lastChat);
 
-            //메세지를 내림 차순으로 정렬 후 마지막 메세지의 키 값을 가져옴.
-            Map<String, ChatModel.Comment> commentMap = new TreeMap<>(Collections.<String>reverseOrder());//역순으로 정렬시킨다.
-            commentMap.putAll(chatModels.get(position).comments); // 현재 채팅방의 comments를 시간의 역순으로 정렬. firebasedatabase의 데이터는 시간을 기반으로 정렬되어있음.
-            if (commentMap.size() == 0 || commentMap == null) {
-                //채팅방만 만들어져있고 채팅내용이 없는 경우.
+            //보낸 시간
+            if (chatModels.get(position).getTimestamp() == null) {
+                holder.textView_timestamp.setVisibility(View.INVISIBLE);
             } else {
-                String lastMessageKey = (String) commentMap.keySet().toArray()[0];
-                holder.textView_last_message.setText(chatModels.get(position).comments.get(lastMessageKey).message);
-                //채팅방목록에 마지막 메세지 시간 표시
                 simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
-                long unixTime = (long) chatModels.get(position).comments.get(lastMessageKey).timestamp;
+                long unixTime = (long) chatModels.get(position).getTimestamp();
                 Date date = new Date(unixTime);
                 holder.textView_timestamp.setText(simpleDateFormat.format(date));
+                holder.textView_timestamp.setVisibility(View.VISIBLE);
             }
+
+            //안읽은 메세지 숫자
+            if (!count.get(position).equals("0") && !count.get(position).equals("null")) {
+                holder.textView_count.setText(count.get(position));
+                holder.textView_count.setVisibility(View.VISIBLE);
+            }
+
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
-                    Intent intent = null;
-                    if (chatModels.get(position).users.size() > 2) {
-                        intent = new Intent(view.getContext(), GroupMessageActivity.class);
-                        intent.putExtra("toRoom",keys.get(position));
+                public void onClick(final View view) {
+
+                    if (countMap == null || countMap.size() == 0) {
+                        return;
                     } else {
-                        intent = new Intent(view.getContext(), MessageActivity.class);
-                        intent.putExtra("uid", user[0]);
+                        //채팅방들어갈때 안읽은 메세지들 모두 읽음으로 처리해서 넘어감.
+                        databaseReference.child("groupChat").child(keys.get(position)).child("comments").orderByChild("readUsers/" + uid).equalTo(false).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot == null) {
+                                    return;
+                                }
+                                Map<String, Object> map = new HashMap<>();
+                                for (DataSnapshot item : dataSnapshot.getChildren()) {
+                                    ChatModel.Comment comment = item.getValue(ChatModel.Comment.class);
+                                    comment.readUsers.put(uid, true);
+                                    map.put(item.getKey(), comment);
+                                }
+                                databaseReference.child("groupChat").child(keys.get(position)).child("comments").updateChildren(map).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Intent intent = null;
+                                        intent = new Intent(view.getContext(), GroupMessageActivity.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                        intent.putExtra("toRoom", keys.get(position)); // 방이름
+                                        intent.putExtra("pCount", pCount.get(position)); // 사람숫자
+                                        intent.putExtra("chatCount", (Long) countMap.get(keys.get(position)));// 채팅숫자
+                                        intent.putExtra("userList", (Serializable) userList);
+                                        Log.d("끊어짐", "");
+                                        ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(view.getContext(), R.anim.fromright, R.anim.toleft);
+                                        databaseReference.child("groupChat").child(keys.get(position)).child("comments").removeEventListener(countEventListener);
+                                        databaseReference.child("lastChat").removeEventListener(valueEventListener);
+                                        Log.d("끊어짐", "1");
+                                        startActivity(intent, activityOptions.toBundle());
+                                    }
+                                });
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
                     }
-                    ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(view.getContext(), R.anim.fromright, R.anim.toleft);
-                    startActivity(intent, activityOptions.toBundle());
 
                 }
             });
@@ -169,6 +227,7 @@ public class ChatFragment extends Fragment {
             public TextView textView_title;
             public TextView textView_last_message;
             public TextView textView_timestamp;
+            public TextView textView_count;
 
             public ChatViewHolder(View view) {
                 super(view);
@@ -176,6 +235,7 @@ public class ChatFragment extends Fragment {
                 textView_title = view.findViewById(R.id.chatitem_textview_title);
                 textView_last_message = view.findViewById(R.id.chatitem_textview_lastMessage);
                 textView_timestamp = view.findViewById(R.id.chatitem_textview_timestamp);
+                textView_count = view.findViewById(R.id.chatitem_textview_count);
             }
         }
     }

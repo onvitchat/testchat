@@ -3,11 +3,15 @@ package com.example.chatapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 
-import com.example.chatapp.fragment.AccountFragment;
+import com.example.chatapp.chat.SelectGroupChatActivity;
+import com.example.chatapp.fragment.NoticeFragment;
+import com.example.chatapp.fragment.ShoppingFragment;
 import com.example.chatapp.fragment.ChatFragment;
 import com.example.chatapp.fragment.PeopleFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -21,25 +25,43 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-
+    private FirebaseAuth firebaseAuth;
+    private String text = null;
+    private Uri uri = null;
+    private PeopleFragment peopleFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        firebaseAuth = FirebaseAuth.getInstance();
+        //유저없으면 로그인 페이지로
+        if(firebaseAuth.getCurrentUser()==null){
+            Intent intent = new Intent(this, LoginActivity.class);
+            firebaseAuth.signOut();
+            startActivity(intent);
+            finish();
+        }
+        getIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        peopleFragment = new PeopleFragment();
+        passPushTokenToServer();
         BottomNavigationView bottomNavigationView = findViewById(R.id.mainActivity_bottomNavigationView);
-        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new PeopleFragment()).commitAllowingStateLoss();
+        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new NoticeFragment()).commitAllowingStateLoss();
+
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()){
+                    case R.id.action_notice:
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new NoticeFragment()).commitAllowingStateLoss();
+                        return true;
                     case R.id.action_people:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new PeopleFragment()).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, peopleFragment).commitAllowingStateLoss();
                         return true;
                     case R.id.action_chat:
                         getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ChatFragment()).commitAllowingStateLoss();
                         return true;
                     case R.id.action_account:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new AccountFragment()).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ShoppingFragment()).commitAllowingStateLoss();
                         return true;
 
                 }
@@ -47,13 +69,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        if(getIntent().getStringExtra("text")!=null || getIntent().getParcelableExtra("shareUri")!=null){
+            text = getIntent().getStringExtra("text");
+            uri = getIntent().getParcelableExtra("shareUri");
+            Intent intent1 = new Intent(MainActivity.this, SelectGroupChatActivity.class);
+            intent1.putExtra("text", text);
+            intent1.putExtra("shareUri", uri);
+            startActivity(intent1);
+        }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        passPushTokenToServer();
-        if(getIntent().getStringExtra("MessageActivity")!=null && getIntent().getStringExtra("MessageActivity").equals("MessageActivity")){
+    protected void onStart() {
+        super.onStart();
+        if (getIntent().getStringExtra("groupChat") != null && getIntent().getStringExtra("groupChat").equals("groupChat")) {
             getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ChatFragment()).commitAllowingStateLoss();
         }
     }
@@ -68,8 +97,38 @@ public class MainActivity extends AppCompatActivity {
                 map.put("pushToken", token);
 
                 FirebaseDatabase.getInstance().getReference().child("Users").child(uid).updateChildren(map);
+                FirebaseDatabase.getInstance().getReference().child("groupChat").child("normalChat").child("userInfo").child(uid).updateChildren(map);
+                FirebaseDatabase.getInstance().getReference().child("groupChat").child("officerChat").child("userInfo").child(uid).updateChildren(map);
             }
         });
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.mail_option_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        super.onOptionsItemSelected(item);
+
+        if (item.getItemId() == R.id.logout) {
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            Map<String, Object> map = new HashMap<>();
+            map.put("pushToken", "");
+            FirebaseDatabase.getInstance().getReference().child("Users").child(uid).updateChildren(map);
+            FirebaseDatabase.getInstance().getReference().child("groupChat").child("normalChat").child("userInfo").child(uid).updateChildren(map);
+            FirebaseDatabase.getInstance().getReference().child("groupChat").child("officerChat").child("userInfo").child(uid).updateChildren(map);
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            intent.putExtra("logOut", "logOut");
+            startActivity(intent);
+            finish();
+        }
+
+        return true;
     }
 }

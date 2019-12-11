@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="70dp"
+    android:layout_marginTop="10dp"
     android:orientation="horizontal">
 
     <ImageView
         android:id="@+id/chatitem_imageview"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_margin="10dp" />
+        android:layout_margin="10dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/kcha_logo" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -19,17 +23,21 @@
             android:id="@+id/chatitem_textview_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="방 이름"
-            android:textSize="20dp" />
+            android:paddingTop="5dp"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            tools:text="방 이름" />
 
         <TextView
             android:id="@+id/chatitem_textview_lastMessage"
-            android:layout_width="wrap_content"
+            android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_below="@+id/chatitem_textview_title"
-            android:layout_marginTop="10dp"
-            android:text="마지막메세지"
-            android:textColor="@android:color/darker_gray" />
+            android:textColor="@android:color/darker_gray"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="마지막메세지" />
 
         <TextView
             android:id="@+id/chatitem_textview_timestamp"
@@ -38,9 +46,22 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_margin="10dp"
-            android:text="2011.11.11 11:11"
             android:textColor="@android:color/darker_gray"
-            android:textSize="10dp" />
+            android:textSize="10dp"
+            tools:text="2011.11.11 11:11" />
+
+        <TextView
+            android:id="@+id/chatitem_textview_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/chatitem_textview_timestamp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/textview_radius"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:visibility="invisible"
+            tools:text="안읽은숫자" />
     </RelativeLayout>
 
 </LinearLayout>

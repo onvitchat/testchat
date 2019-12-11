@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/black"
+    tools:context=".chat.BigPictureActivity">
+
+    <androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/chat_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:titleTextColor="@android:color/white"
+        android:theme="@style/AppTheme.pictureActionBar">
+    </androidx.appcompat.widget.Toolbar>
+
+    <ImageView
+        android:id="@+id/picture_img"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/img_down"
+        android:layout_below="@id/chat_toolbar"/>
+
+    <ImageView
+        android:id="@+id/img_down"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:paddingTop="20dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/ic_file_download_24dp"
+        android:background="@color/black"/>
+</RelativeLayout>

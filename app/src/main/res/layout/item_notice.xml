@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="2dp"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.17"
+            android:text="[공지사항]"
+            android:textColor="#B77300"
+            android:layout_marginStart="5dp"/>
+        <TextView
+            android:id="@+id/notice_title"
+            android:layout_width="0dp"
+            android:layout_weight="0.57"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/black"
+            tools:text="공지사항 타이틀"/>
+        <ToggleButton
+            android:id="@+id/toggle_btn"
+            android:layout_width="0dp"
+            android:layout_weight="0.05"
+            android:layout_height="wrap_content"
+            android:textOn=""
+            android:textOff=""
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/ic_keyboard_arrow_down_black_24dp"/>
+        <TextView
+            android:id="@+id/notice_time"
+            android:layout_width="0dp"
+            android:layout_weight="0.2"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            tools:text="공지사항시간"/>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/notice_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="7dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        tools:text="게시물 상세 내용"
+        android:background="@android:color/white"
+        android:visibility="gone"/>
+</LinearLayout>

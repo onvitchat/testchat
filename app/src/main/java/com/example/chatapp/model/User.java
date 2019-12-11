@@ -3,7 +3,11 @@ package com.example.chatapp.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class User implements Comparable, Parcelable {
+import java.io.Serializable;
+
+import io.realm.RealmObject;
+
+public class User implements Comparable<User>, Parcelable {
     private String userName;
     private String userEmail;
     private String userPassword;
@@ -11,6 +15,7 @@ public class User implements Comparable, Parcelable {
     private String uid;
     private String pushToken;
     private String comment;
+    private String tel;
 
     public User(){
 
@@ -24,6 +29,7 @@ public class User implements Comparable, Parcelable {
         uid = in.readString();
         pushToken = in.readString();
         comment = in.readString();
+        tel = in.readString();
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
@@ -37,6 +43,14 @@ public class User implements Comparable, Parcelable {
             return new User[size];
         }
     };
+
+    public String getTel() {
+        return tel;
+    }
+
+    public void setTel(String tel) {
+        this.tel = tel;
+    }
 
     public String getComment() {
         return comment;
@@ -101,12 +115,10 @@ public class User implements Comparable, Parcelable {
                 ", userEmail='" + userEmail + '\'' +
                 ", userPassword='" + userPassword + '\'' +
                 ", userProfileImageUrl='" + userProfileImageUrl + '\'' +
+                ", uid='" + uid + '\'' +
+                ", pushToken='" + pushToken + '\'' +
+                ", comment='" + comment + '\'' +
                 '}';
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        return 0;
     }
 
     @Override
@@ -123,5 +135,16 @@ public class User implements Comparable, Parcelable {
         parcel.writeString(uid);
         parcel.writeString(pushToken);
         parcel.writeString(comment);
+        parcel.writeString(tel);
+    }
+
+    @Override
+    public int compareTo(User user) {
+        if(this.userName.compareTo(user.getUserName())>0){
+            return 1;
+        }else if(this.userName.compareTo(user.getUserName())<0){
+            return -1;
+        }
+        return 0;
     }
 }
