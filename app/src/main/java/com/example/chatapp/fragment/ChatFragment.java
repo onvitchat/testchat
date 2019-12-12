@@ -51,14 +51,10 @@ public class ChatFragment extends Fragment {
     private AppCompatActivity activity;
     private Toolbar chatToolbar;
     private ValueEventListener valueEventListener;
-    private ValueEventListener countEventListener;
     private List<ChatList> chatModels = new ArrayList<>();
     private List<String> keys = new ArrayList<>();
     private List<String> count = new ArrayList<>();
-    private List<String> pCount = new ArrayList<>();
-    private Map<String, Object> countMap = new HashMap<>();
     private String uid;
-    private Map<String, User> userList = new HashMap<>();
     public ChatFragment() {
 
     }
@@ -79,7 +75,8 @@ public class ChatFragment extends Fragment {
     }
 
     class ChatRecyclerViewAdapter extends RecyclerView.Adapter<ChatRecyclerViewAdapter.ChatViewHolder> {
-
+        private ValueEventListener countEventListener;
+        private Map<String, Object> countMap = new HashMap<>();
         public ChatRecyclerViewAdapter() {
             uid = FirebaseAuth.getInstance().getCurrentUser().getUid();// 클라이언트uid
             valueEventListener = new ValueEventListener() {
@@ -92,9 +89,7 @@ public class ChatFragment extends Fragment {
                         ChatList chatList = item.getValue(ChatList.class);
                         chatModels.add(chatList);// 채팅방 밖에 표시할 내용들.
                         keys.add(item.getKey());// normalChat, officerChat 채팅방 이름.
-                        count.add(chatList.getUsers().get(uid) + ""); // 안읽은 숫자.
-                        pCount.add(chatList.getUsers().size() + "");
-
+                        count.add(chatList.getUsers().get(uid) + ""); // 안읽은 숫자
 
                         countEventListener = new ValueEventListener() {
                             @Override
@@ -165,12 +160,9 @@ public class ChatFragment extends Fragment {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(final View view) {
-
-                    if (countMap == null || countMap.size() == 0) {
-                        return;
-                    } else {
                         //채팅방들어갈때 안읽은 메세지들 모두 읽음으로 처리해서 넘어감.
-                        databaseReference.child("groupChat").child(keys.get(position)).child("comments").orderByChild("readUsers/" + uid).equalTo(false).addListenerForSingleValueEvent(new ValueEventListener() {
+                        databaseReference.child("groupChat").child(keys.get(position)).child("comments").orderByChild("readUsers/" + uid).equalTo(false)
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 if (dataSnapshot == null) {
@@ -189,14 +181,8 @@ public class ChatFragment extends Fragment {
                                         intent = new Intent(view.getContext(), GroupMessageActivity.class);
                                         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                         intent.putExtra("toRoom", keys.get(position)); // 방이름
-                                        intent.putExtra("pCount", pCount.get(position)); // 사람숫자
                                         intent.putExtra("chatCount", (Long) countMap.get(keys.get(position)));// 채팅숫자
-                                        intent.putExtra("userList", (Serializable) userList);
-                                        Log.d("끊어짐", "");
                                         ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(view.getContext(), R.anim.fromright, R.anim.toleft);
-                                        databaseReference.child("groupChat").child(keys.get(position)).child("comments").removeEventListener(countEventListener);
-                                        databaseReference.child("lastChat").removeEventListener(valueEventListener);
-                                        Log.d("끊어짐", "1");
                                         startActivity(intent, activityOptions.toBundle());
                                     }
                                 });
@@ -208,12 +194,8 @@ public class ChatFragment extends Fragment {
 
                             }
                         });
-
-                    }
-
                 }
             });
-
 
         }
 

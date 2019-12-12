@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -16,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.chatapp.chat.SelectGroupChatActivity;
+import com.example.chatapp.model.ChatModel;
 import com.example.chatapp.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -34,7 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,15 +45,15 @@ public class SplashActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private ValueEventListener valueEventListener;
     private List<User> userList;
-    private List<User> logOutList;
     private String text = null;
     private Uri uri = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         getIntent().addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().setStatusBarColor(Color.parseColor("#050099"));
         linearLayout = findViewById(R.id.splashactivity_linearlayout);
         firebaseAuth = FirebaseAuth.getInstance();
@@ -67,19 +66,6 @@ public class SplashActivity extends AppCompatActivity {
         mFirebaseRemoteConfig.setDefaultsAsync(R.xml.default_config);
 
 
-//        mFirebaseRemoteConfig.fetch(0) // 재요청까지 걸리는 시간? 디버그 모드라 0초로 해도됨. 디버그 모드가 아니면 시간에 따른 횟수제한이 있음. 나중에 찾아보기.
-//                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<Void> task) {
-//                        if (task.isSuccessful()) {
-//                            // Once the config is successfully fetched it must be activated before newly fetched
-//                            // values are returned.
-//                            mFirebaseRemoteConfig.activateFetched();
-//                        } else {
-//                        }
-//                        displayMessage();
-//                    }
-//                });
         mFirebaseRemoteConfig.fetchAndActivate()
                 .addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
                     @Override
@@ -96,13 +82,29 @@ public class SplashActivity extends AppCompatActivity {
                         displayMessage();
                     }
                 });
-        if(firebaseAuth.getCurrentUser()==null){
+        if (PreferenceManager.getString(this, "name") == null || PreferenceManager.getString(this, "name").equals("")) {
             firebaseAuth.signOut();
             Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
-        }else{
+        } else {
             userList = new ArrayList<>();
+            final Date date = new Date();
+            long twoM = (24L * 60 * 60 * 1000 * 60);
+            long oldDate = date.getTime()-twoM;
+            //맨 처음채팅부터 200개씩 가져와서 두달지난거 삭제함.
+            String chatName = "normalChat";
+            deleteChat(oldDate,chatName);
+            chatName = "officerChat";
+            deleteChat(oldDate,chatName);
+
+            //한달 지난 공지사항 삭제함.
+//            long oneM = (24L * 60 * 60 * 1000)*30;
+//            long noticeDate = date.getTime()-oneM;
+//            deleteNotice(noticeDate);
+
+
+
             valueEventListener = new ValueEventListener() { // Users데이터의 변화가 일어날때마다 콜백으로 호출됨.
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -118,12 +120,20 @@ public class SplashActivity extends AppCompatActivity {
 
                     }
 
-                    if(user==null){
+                    if (user == null) {
                         firebaseAuth.signOut();
                         Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
                         startActivity(intent);
                         finish();
                     }
+//                    if(getIntent().getStringExtra("fcm")!=null){
+//                        Log.d("들어옴?", "");
+//                        Intent intent2 = new Intent(SplashActivity.this, MainActivity.class);
+//                        intent2.putExtra("fcm", "fcm");
+//                        intent2.setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                        startActivity(intent2);
+//                        finish();
+//                    }
 
                     Intent intent = getIntent();
                     String action = intent.getAction();
@@ -152,7 +162,7 @@ public class SplashActivity extends AppCompatActivity {
                             finish();
                             Log.d("공유", uri.toString());
                         }
-                    }else{
+                    } else {
                         Intent intent2 = new Intent(SplashActivity.this, MainActivity.class);
 //                        intent2.putParcelableArrayListExtra("userList", (ArrayList<? extends Parcelable>) userList);
                         intent2.setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -171,6 +181,51 @@ public class SplashActivity extends AppCompatActivity {
             FirebaseDatabase.getInstance().getReference().child("Users").addValueEventListener(valueEventListener);
         }
     }
+
+    private void deleteNotice(final long noticeDate) {
+        FirebaseDatabase.getInstance().getReference().child("Notice")
+                .orderByChild("timestamp")
+                .endAt(noticeDate).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Map<String, Object> map = new HashMap<>();
+                Log.d("삭제갯수", dataSnapshot.getChildrenCount()+"");
+                Log.d("삭제뺀거", noticeDate+"");
+                for (DataSnapshot item : dataSnapshot.getChildren()) {
+                    map.put(item.getKey(), null);
+                    Log.d("삭제키", item.getKey());
+                }
+                FirebaseDatabase.getInstance().getReference().child("Notice").updateChildren(map);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void deleteChat(final long date, final String chatName) {
+        FirebaseDatabase.getInstance().getReference().child("groupChat").child(chatName).child("comments")
+                .orderByChild("timestamp")
+                .endAt(date).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Map<String, Object> map = new HashMap<>();
+                Log.d("삭제", dataSnapshot.getChildrenCount()+"");
+                for (DataSnapshot item : dataSnapshot.getChildren()) {
+                        map.put(item.getKey(), null);
+                }
+                FirebaseDatabase.getInstance().getReference().child("groupChat").child(chatName).child("comments").updateChildren(map);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     void displayMessage() {
         boolean caps = mFirebaseRemoteConfig.getBoolean("splash_message_caps"); // 이거 true로 보내면 서버점검중이라고 띄울 수 있음.
         String splashMessage = mFirebaseRemoteConfig.getString("splash_message");
@@ -190,6 +245,7 @@ public class SplashActivity extends AppCompatActivity {
 
         }
     }
+
     private Uri getConvertUri(Uri uri) {
         try {
             File file = new File(Environment.getExternalStorageDirectory() + "/KCHA", System.currentTimeMillis() + ".jpeg");
@@ -212,14 +268,14 @@ public class SplashActivity extends AppCompatActivity {
         }
         return null;
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(valueEventListener!=null){
+        if (valueEventListener != null) {
             FirebaseDatabase.getInstance().getReference().child("Users").removeEventListener(valueEventListener);
         }
     }
-
 
 
 }

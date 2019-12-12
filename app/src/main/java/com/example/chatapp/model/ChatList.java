@@ -51,6 +51,14 @@ public class ChatList {
     }
 
 
-
-
+    @Override
+    public String toString() {
+        return "ChatList{" +
+                "users=" + users +
+                ", chatName='" + chatName + '\'' +
+                ", lastChat='" + lastChat + '\'' +
+                ", timestamp=" + timestamp +
+                ", photo='" + photo + '\'' +
+                '}';
+    }
 }

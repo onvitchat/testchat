@@ -4,6 +4,42 @@ public class NoticeList {
     private String title;
     private String content;
     private String time;
+    private String name;
+    private String uid;
+    private String code;
+    private Object timestamp;
+
+    public Object getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Object timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getTitle() {
         return title;

@@ -24,6 +24,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+import com.example.chatapp.model.NoticeList;
 import com.example.chatapp.model.User;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCanceledListener;
@@ -35,8 +37,10 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -49,11 +53,13 @@ import java.util.Map;
 public class SignUpActivity extends AppCompatActivity {
     public static final int REQUEST_CODE = 1000;
     private EditText name;
+    private EditText hospital;
     private EditText tel;
     private EditText email;
     private EditText password;
     private Button signup;
     private TextInputLayout tName;
+    private TextInputLayout tHospital;
     private TextInputLayout tTel;
     private TextInputLayout tEmail;
     private TextInputLayout tPassword;
@@ -85,11 +91,15 @@ public class SignUpActivity extends AppCompatActivity {
         tel = findViewById(R.id.signupActivity_edittext_tel);
         email = findViewById(R.id.signupActivity_edittext_email);
         password = findViewById(R.id.signupActivity_edittext_password);
+        hospital = findViewById(R.id.signupActivity_edittext_hospital);
+
         tName = findViewById(R.id.signupActivity_textInputLayout_name);
+        tHospital = findViewById(R.id.signupActivity_textInputLayout_hospital);
         tTel = findViewById(R.id.signupActivity_textInputLayout_tel);
         tEmail = findViewById(R.id.signupActivity_textInputLayout_email);
         tPassword = findViewById(R.id.signupActivity_textInputLayout_password);
         tName.setErrorEnabled(true);
+        tHospital.setErrorEnabled(true);
         tTel.setErrorEnabled(true);
         tEmail.setErrorEnabled(true);
         tPassword.setErrorEnabled(true);
@@ -115,82 +125,136 @@ public class SignUpActivity extends AppCompatActivity {
 
                 }
             });
+        } else {
+            signup.setText("프로필 수정");
+            user = getIntent().getParcelableExtra("modify");
+            if(user.getUserProfileImageUrl().equals("noImg")){
+                profileImageView.setImageResource(R.drawable.standard_profile);
+            }else{
+                imageUri = Uri.parse(user.getUserProfileImageUrl());
+                Glide.with(SignUpActivity.this).load(imageUri).into(profileImageView);
+            }
+            name.setText(user.getUserName());
+            tel.setText(user.getTel());
+            hospital.setText(user.getHospital());
+            email.setText(user.getUserEmail());
+            email.setFocusable(false);
+            email.setClickable(false);
+            tPassword.setVisibility(View.GONE);
+            password.setText(user.getUserPassword());
+            signup.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(SignUpActivity.this);
+                    builder.setView(R.layout.update);
+                    AlertDialog dialog = builder.create();
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.setCancelable(false);
+                    dialog.show();
+                    modify(dialog);
+
+                }
+            });
         }
-//        else {
-//            signup.setText("프로필 수정");
-//            user = getIntent().getParcelableExtra("modify");
-//            if(user.getUserProfileImageUrl().equals("noImg")){
-//                profileImageView.setImageResource(R.drawable.standard_profile);
-//            }else{
-//                imageUri = Uri.parse(user.getUserProfileImageUrl());
-//                profileImageView.setImageURI(imageUri);
-//            }
-//            name.setText(user.getUserName());
-//            tel.setText(user.getTel());
-//            email.setText(user.getUserEmail());
-//
-//            signup.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    modify();
-//
-//                }
-//            });
-//        }
 
     }
 
-//    private void modify() {
-//        if (checkInfo()) {
-//            return;
-//        }
-//
-//        if (imageUri != null && !imageUri.equals(Uri.parse(user.getUserProfileImageUrl()))) {
-//            Bitmap bitmap = resize(SignUpActivity.this, imageUri, 500);
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-//            final byte[] bytes = baos.toByteArray();
-//            final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("userImages").child(uid);
-//            UploadTask uploadTask = storageReference.putBytes(bytes); // firebaseStorage에 uid이름으로 프로필 사진 저장
-//            uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-//                @Override
-//                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-//                    if (!task.isSuccessful()) {
-//                        throw task.getException();
-//                    }
-//                    return storageReference.getDownloadUrl();
-//                }
-//            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-//                //storageReference 에 저장한 이미지 uri를 불러옴
-//                @Override
-//                public void onComplete(@NonNull Task<Uri> task) {
-//                    if (task.isSuccessful()) {
-//                        Uri taskResult = task.getResult();
-//                        String imageUri = taskResult.toString();
-//                        modifyInfo(imageUri);
-//
-//                    }
-//                }
-//            });
-//        } else {
-//            String imageUri = user.getUserProfileImageUrl();
-//            modifyInfo(imageUri);
-//        }
-//
-//    }
-//
-//    private void modifyInfo(String imageUri) {
-//        Map<String, Object> map = new HashMap<>();
-//        Map<String, Object> modi = new HashMap<>();
-//        modi.put("tel", tel.getText().toString());
-//        map.put(user.getUid(), modifyUser);
-//        FirebaseDatabase.getInstance().getReference().child("Users").child(user.getUid()).updateChildren(map).addOnSuccessListener(new OnSuccessListener<Void>() {
-//            @Override
-//            public void onSuccess(Void aVoid) {
-//                Toast.makeText(SignUpActivity.this, "수정완료", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//    }
+    private void modify(final AlertDialog dialog) {
+        if (checkInfo()) {
+            return;
+        }
+
+        if (imageUri != null && !imageUri.equals(Uri.parse(user.getUserProfileImageUrl()))) {
+            Bitmap bitmap = resize(SignUpActivity.this, imageUri, 500);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            final byte[] bytes = baos.toByteArray();
+            final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("userImages").child(user.getUid());
+            UploadTask uploadTask = storageReference.putBytes(bytes); // firebaseStorage에 uid이름으로 프로필 사진 저장
+            uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                @Override
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return storageReference.getDownloadUrl();
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                //storageReference 에 저장한 이미지 uri를 불러옴
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()) {
+                        Uri taskResult = task.getResult();
+                        String imageUri = taskResult.toString();
+                        modifyInfo(imageUri, dialog);
+
+                    }
+                }
+            });
+        } else {
+            String imageUri = user.getUserProfileImageUrl();
+            modifyInfo(imageUri, dialog);
+        }
+
+    }
+
+    private void modifyInfo(String imageUri, final AlertDialog dialog) {
+        Map<String, Object> map = new HashMap<>();
+        final User modifyUser = new User();
+        modifyUser.setHospital(hospital.getText().toString());
+        modifyUser.setPushToken(user.getPushToken());
+        modifyUser.setTel(tel.getText().toString());
+        modifyUser.setUid(user.getUid());
+        modifyUser.setUserEmail(user.getUserEmail());
+        modifyUser.setUserName(name.getText().toString());
+        modifyUser.setUserPassword(user.getUserPassword());
+        modifyUser.setUserProfileImageUrl(imageUri);
+        map.put(user.getUid(), modifyUser);
+        FirebaseDatabase.getInstance().getReference().child("Users").updateChildren(map).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Map<String, Object> map = new HashMap<>();
+                //각각의 그룹채팅방에 유저 정보 / 접속여부를 넣음
+                map.put("normalChat/userInfo/" + user.getUid(), modifyUser);
+                map.put("officerChat/userInfo/" + user.getUid(), modifyUser);
+                FirebaseDatabase.getInstance().getReference().child("groupChat").updateChildren(map);
+                PreferenceManager.setString(SignUpActivity.this,"name", modifyUser.getUserName());
+                PreferenceManager.setString(SignUpActivity.this,"hospital", modifyUser.getHospital());
+                PreferenceManager.setString(SignUpActivity.this,"phone", modifyUser.getTel());
+                PreferenceManager.setString(SignUpActivity.this,"uid", modifyUser.getUid());
+
+                FirebaseDatabase.getInstance().getReference().child("Notice").orderByChild("uid").equalTo(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.getChildrenCount()==0){
+                            dialog.dismiss();
+                            finish();
+                        }else{
+                            for(DataSnapshot item : dataSnapshot.getChildren()){
+                                NoticeList notice = item.getValue(NoticeList.class);
+                                notice.setName(PreferenceManager.getString(SignUpActivity.this,"name")+"("+PreferenceManager.getString(SignUpActivity.this,"hospital")+")");
+                                Map<String, Object> map = new HashMap<>();
+                                map.put(item.getKey(), notice);
+                                FirebaseDatabase.getInstance().getReference().child("Notice").updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        dialog.dismiss();
+                                        finish();
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+            }
+        });
+    }
 
     private void signUp() {
         if (checkInfo()) {
@@ -219,6 +283,7 @@ public class SignUpActivity extends AppCompatActivity {
                         final String uid = task.getResult().getUser().getUid();
                         final User user = new User();
                         user.setUserName(name.getText().toString());
+                        user.setHospital(hospital.getText().toString());
                         user.setTel(tel.getText().toString());
                         user.setUserEmail(email.getText().toString());
                         user.setUserPassword(password.getText().toString());
@@ -294,6 +359,12 @@ public class SignUpActivity extends AppCompatActivity {
                                 builder.setCancelable(false);
                                 builder.create().setCanceledOnTouchOutside(false);
                                 builder.create().show();
+
+                                PreferenceManager.setString(SignUpActivity.this,"name", user.getUserName());
+                                PreferenceManager.setString(SignUpActivity.this,"hospital", user.getHospital());
+                                PreferenceManager.setString(SignUpActivity.this,"phone", user.getTel());
+                                PreferenceManager.setString(SignUpActivity.this,"uid", user.getUid());
+
                             }
                         });
                     }
@@ -318,12 +389,22 @@ public class SignUpActivity extends AppCompatActivity {
             tEmail.setError("");
             tTel.setError("");
             tPassword.setError("");
+            tHospital.setError("");
             tName.setError("이름을 입력하세요.");
+            return true;
+        }
+        if (hospital.getText().toString().replace(" ", "").equals("") || hospital.getText().toString() == null) {
+            tEmail.setError("");
+            tTel.setError("");
+            tPassword.setError("");
+            tName.setError("");
+            tHospital.setError("병원을 입력하세요.");
             return true;
         }
         if (tel.getText().toString().replace(" ", "").equals("") || tel.getText().toString() == null) {
             tEmail.setError("");
             tPassword.setError("");
+            tHospital.setError("");
             tName.setError("");
             tTel.setError("전화번호을 입력하세요.");
             return true;
@@ -332,6 +413,7 @@ public class SignUpActivity extends AppCompatActivity {
             tName.setError("");
             tTel.setError("");
             tPassword.setError("");
+            tHospital.setError("");
             tEmail.setError("이메일을 입력하세요.");
             return true;
         }
@@ -339,6 +421,7 @@ public class SignUpActivity extends AppCompatActivity {
             tEmail.setError("");
             tTel.setError("");
             tName.setError("");
+            tHospital.setError("");
             tPassword.setError("비밀번호를 입력하세요.");
             return true;
         }
@@ -346,6 +429,7 @@ public class SignUpActivity extends AppCompatActivity {
             tEmail.setError("");
             tTel.setError("");
             tName.setError("");
+            tHospital.setError("");
             tPassword.setError("비밀번호는 6자리 이상이어야 합니다.");
             return true;
         }

@@ -16,6 +16,7 @@ public class User implements Comparable<User>, Parcelable {
     private String pushToken;
     private String comment;
     private String tel;
+    private String hospital;
 
     public User(){
 
@@ -30,6 +31,7 @@ public class User implements Comparable<User>, Parcelable {
         pushToken = in.readString();
         comment = in.readString();
         tel = in.readString();
+        hospital = in.readString();
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
@@ -43,6 +45,14 @@ public class User implements Comparable<User>, Parcelable {
             return new User[size];
         }
     };
+
+    public String getHospital() {
+        return hospital;
+    }
+
+    public void setHospital(String hospital) {
+        this.hospital = hospital;
+    }
 
     public String getTel() {
         return tel;
@@ -136,6 +146,7 @@ public class User implements Comparable<User>, Parcelable {
         parcel.writeString(pushToken);
         parcel.writeString(comment);
         parcel.writeString(tel);
+        parcel.writeString(hospital);
     }
 
     @Override

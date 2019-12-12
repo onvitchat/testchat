@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -29,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
     private String text = null;
     private Uri uri = null;
     private PeopleFragment peopleFragment;
+    private ChatFragment chatFragment;
+    private NoticeFragment noticeFragment;
+    private ShoppingFragment shoppingFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,25 +48,28 @@ public class MainActivity extends AppCompatActivity {
         }
         getIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         peopleFragment = new PeopleFragment();
+        chatFragment = new ChatFragment();
+        noticeFragment = new NoticeFragment();
+        shoppingFragment = new ShoppingFragment();
         passPushTokenToServer();
         BottomNavigationView bottomNavigationView = findViewById(R.id.mainActivity_bottomNavigationView);
-        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new NoticeFragment()).commitAllowingStateLoss();
+        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, noticeFragment).commitAllowingStateLoss();
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()){
                     case R.id.action_notice:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new NoticeFragment()).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, noticeFragment).commitAllowingStateLoss();
                         return true;
                     case R.id.action_people:
                         getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, peopleFragment).commitAllowingStateLoss();
                         return true;
                     case R.id.action_chat:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ChatFragment()).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, chatFragment).commitAllowingStateLoss();
                         return true;
                     case R.id.action_account:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ShoppingFragment()).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, shoppingFragment).commitAllowingStateLoss();
                         return true;
 
                 }
@@ -80,10 +88,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        if (getIntent().getStringExtra("groupChat") != null && getIntent().getStringExtra("groupChat").equals("groupChat")) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ChatFragment()).commitAllowingStateLoss();
+    protected void onResume() {
+        super.onResume();
+        if(getIntent().getStringExtra("fcm")!=null){
+            Log.d("들어옴?", "");
+            getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, chatFragment).commitAllowingStateLoss();
         }
     }
 
@@ -125,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
             FirebaseDatabase.getInstance().getReference().child("groupChat").child("officerChat").child("userInfo").child(uid).updateChildren(map);
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.putExtra("logOut", "logOut");
+            PreferenceManager.clear(this);
             startActivity(intent);
             finish();
         }

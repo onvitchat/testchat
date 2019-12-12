@@ -108,6 +108,9 @@ public class LoginActivity extends AppCompatActivity {
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(snapshot.getValue(User.class).getUid())) {
                                     user = snapshot.getValue(User.class);
+                                    PreferenceManager.setString(LoginActivity.this,"name", user.getUserName());
+                                    PreferenceManager.setString(LoginActivity.this,"hospital", user.getHospital());
+                                    PreferenceManager.setString(LoginActivity.this,"phone", user.getTel());
                                     continue;
                                 }
                                 userList.add(snapshot.getValue(User.class));

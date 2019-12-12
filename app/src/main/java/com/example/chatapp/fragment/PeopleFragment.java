@@ -139,7 +139,7 @@ public class PeopleFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(getContext(), PersonInfoActivity.class);
-                    intent.putExtra("info",userList.get(position));
+                    intent.putExtra("info",userList.get(position).getUid());
                     intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                 }

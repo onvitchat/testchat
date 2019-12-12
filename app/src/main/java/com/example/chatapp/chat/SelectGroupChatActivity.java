@@ -96,12 +96,10 @@ public class SelectGroupChatActivity extends AppCompatActivity {
         private List<ChatList> chatModels = new ArrayList<>();
         private List<String> keys = new ArrayList<>();
         private List<String> count = new ArrayList<>();
-        private List<String> pCount = new ArrayList<>();
         private Map<String, Object> countMap = new HashMap<>();
         private String uid;
         private ValueEventListener countEventListener;
-        private ValueEventListener userInfoEventListener;
-        private Map<String, User> userList = new HashMap<>();
+
 
         public SelectGroupChatRecyclerAdapter() {
             uid = FirebaseAuth.getInstance().getCurrentUser().getUid();// 클라이언트uid
@@ -116,7 +114,6 @@ public class SelectGroupChatActivity extends AppCompatActivity {
                         chatModels.add(chatList);// 채팅방 밖에 표시할 내용들.
                         keys.add(item.getKey());// normalChat, officerChat 채팅방 이름.
                         count.add(chatList.getUsers().get(uid) + ""); // 안읽은 숫자.
-                        pCount.add(chatList.getUsers().size() + "");
 
 
                         countEventListener = new ValueEventListener() {
@@ -131,26 +128,6 @@ public class SelectGroupChatActivity extends AppCompatActivity {
 
                             }
                         };
-                        userInfoEventListener = new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                Log.d("유저", dataSnapshot.toString());
-                                for(DataSnapshot user : dataSnapshot.getChildren()){
-                                    User user2 = user.getValue(User.class);
-                                    userList.put(user2.getUid(), user2);
-
-                                }
-                                Log.d("유저갯수", userList.size() + "");
-                                Log.d("유저", userList.toString());
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        };
-                        Log.d("방", item.getKey());
-                        databaseReference.child("groupChat").child(item.getKey()).child("userInfo").addValueEventListener(userInfoEventListener);
                         databaseReference.child("groupChat").child(item.getKey()).child("comments").orderByChild("existUser/" + uid).equalTo(true).addValueEventListener(countEventListener);
 
                     }
@@ -232,22 +209,18 @@ public class SelectGroupChatActivity extends AppCompatActivity {
                                             intent = new Intent(SelectGroupChatActivity.this, GroupMessageActivity.class);
                                             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                             intent.putExtra("toRoom", keys.get(position)); // 방이름
-                                            intent.putExtra("pCount", pCount.get(position)); // 사람숫자
                                             intent.putExtra("chatCount", (Long) countMap.get(keys.get(position)));// 채팅숫자
-                                            intent.putExtra("userList", (Serializable) userList);
                                             if (text != null) {
                                                 intent.putExtra("shareText", text);
                                             }
                                             if (uri != null) {
                                                 intent.putExtra("shareUri", uri);
                                             }
-                                            Log.d("끊어짐", "");
+
                                             ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(SelectGroupChatActivity.this, R.anim.fromright, R.anim.toleft);
-                                            databaseReference.child("groupChat").child(keys.get(position)).child("comments").child("userInfo").removeEventListener(userInfoEventListener);
-                                            databaseReference.child("groupChat").child(keys.get(position)).child("comments").removeEventListener(countEventListener);
-                                            databaseReference.child("lastChat").removeEventListener(valueEventListener);
-                                            Log.d("끊어짐", "1");
+
                                             startActivity(intent, activityOptions.toBundle());
+                                            finish();
                                         }
                                     });
 
