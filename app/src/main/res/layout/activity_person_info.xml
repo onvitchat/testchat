@@ -88,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:text="프로필 편집"
                 android:textColor="@color/black"
-                android:textSize="25sp"
+                android:textSize="25dp"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -111,7 +111,7 @@
                 android:layout_height="wrap_content"
                 android:text="전화걸기"
                 android:textColor="@color/black"
-                android:textSize="25sp"
+                android:textSize="25dp"
                 android:textStyle="bold" />
         </LinearLayout>
 

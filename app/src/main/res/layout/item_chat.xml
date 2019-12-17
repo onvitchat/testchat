@@ -63,6 +63,7 @@
             android:background="@drawable/textview_radius"
             android:textColor="@android:color/white"
             android:textStyle="bold"
+            android:layout_marginTop="5dp"
             android:visibility="invisible"
             tools:text="안읽은숫자" />
     </RelativeLayout>

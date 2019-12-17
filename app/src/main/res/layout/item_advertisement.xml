@@ -10,7 +10,6 @@
         android:id="@+id/item_cardview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="1dp"
         app:cardUseCompatPadding="true"
         app:cardElevation="10dp"
         app:cardCornerRadius="5dp">
@@ -30,8 +29,9 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:textSize="20dp"
-                android:padding="10dp"
-                android:text="자세히보기>>"/>
+                android:textColor="@android:color/black"
+                android:padding="5dp"
+                android:text="상품보기"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

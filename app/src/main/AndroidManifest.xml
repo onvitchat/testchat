@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.chatapp">
+    package="com.onvit.chatapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -27,20 +27,21 @@
         android:roundIcon="@mipmap/ic_kcha_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".chat.BigPictureActivity"></activity>
+        <activity android:name=".certification.CertificateActivity"></activity>
+        <activity android:name=".ad.ADActivity" />
+        <activity android:name=".chat.BigPictureActivity" />
         <activity
             android:name=".PersonInfoActivity"
-            android:theme="@style/AppTheme.StatusBar"></activity>
-        <activity android:name=".chat.SelectGroupChatActivity"></activity>
+            android:theme="@style/AppTheme.StatusBar" />
+        <activity android:name=".chat.SelectGroupChatActivity" />
         <activity
             android:name=".chat.GroupMessageActivity"
-            android:theme="@style/AppTheme.chatStatusBar">
-        </activity>
+            android:theme="@style/AppTheme.chatStatusBar" />
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme.StatusBar"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize"/>
+            android:theme="@style/AppTheme.StatusBar"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".SignUpActivity"
             android:screenOrientation="portrait"
@@ -50,11 +51,6 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".SplashActivity">
-            <intent-filter>
-                <action android:name="GroupMessage" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -68,10 +64,15 @@
                 <data android:mimeType="text/plain" />
                 <data android:mimeType="image/*" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="GroupMessage" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <service
-            android:name=".MyFirebaseMessagingService"
+            android:name=".fcm.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -80,7 +81,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.chatapp.fileprovider"
+            android:authorities="com.onvit.chatapp.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

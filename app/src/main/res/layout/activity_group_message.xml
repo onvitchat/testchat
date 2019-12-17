@@ -18,7 +18,7 @@
         android:layout_marginTop="13dp"
         tools:text="50"
         android:textColor="#FFE400"
-        android:textSize="20sp"/>
+        android:textSize="20dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/groupMessageActivity_recyclerView"
