@@ -59,8 +59,10 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText hospital;
     private EditText tel;
     private EditText email;
+    private EditText grade;
     private EditText password;
     private Button signup;
+    private TextInputLayout tGrade;
     private TextInputLayout tName;
     private TextInputLayout tHospital;
     private TextInputLayout tTel;
@@ -94,12 +96,13 @@ public class SignUpActivity extends AppCompatActivity {
         email = findViewById(R.id.signupActivity_edittext_email);
         password = findViewById(R.id.signupActivity_edittext_password);
         hospital = findViewById(R.id.signupActivity_edittext_hospital);
-
+        grade = findViewById(R.id.signupActivity_edittext_grade);
         tName = findViewById(R.id.signupActivity_textInputLayout_name);
         tHospital = findViewById(R.id.signupActivity_textInputLayout_hospital);
         tTel = findViewById(R.id.signupActivity_textInputLayout_tel);
         tEmail = findViewById(R.id.signupActivity_textInputLayout_email);
         tPassword = findViewById(R.id.signupActivity_textInputLayout_password);
+        tGrade = findViewById(R.id.signupActivity_textInputLayout_grade);
         tName.setErrorEnabled(true);
         tHospital.setErrorEnabled(true);
         tTel.setErrorEnabled(true);
@@ -111,19 +114,20 @@ public class SignUpActivity extends AppCompatActivity {
 
 
         if (getIntent().getParcelableExtra("modify") == null) {
-//            final User user = getIntent().getParcelableExtra("user");
-//            name.setText(user.getUserName());
-//            tel.setText(user.getTel());
-//            email.setText(user.getUserEmail());
-//            hospital.setText(user.getHospital());
-//            name.setFocusable(false);
-//            name.setClickable(false);
-//            tel.setFocusable(false);
-//            tel.setClickable(false);
-//            email.setFocusable(false);
-//            email.setClickable(false);
-//            hospital.setFocusable(false);
-//            hospital.setClickable(false);
+            final User joinUser = getIntent().getParcelableExtra("user");
+            grade.setText(joinUser.getGrade());
+            name.setText(joinUser.getUserName());
+            tel.setText(joinUser.getTel());
+            email.setText(joinUser.getUserEmail());
+            hospital.setText(joinUser.getHospital());
+            grade.setFocusable(false);
+            grade.setClickable(false);
+            name.setFocusable(false);
+            name.setClickable(false);
+            tel.setFocusable(false);
+            tel.setClickable(false);
+            hospital.setFocusable(false);
+            hospital.setClickable(false);
             signup.setText("회원가입");
             password.setOnEditorActionListener(new TextView.OnEditorActionListener() { // 완료눌러도 회원가입기능되게~
                 @Override
@@ -151,6 +155,7 @@ public class SignUpActivity extends AppCompatActivity {
                 imageUri = Uri.parse(user.getUserProfileImageUrl());
                 Glide.with(SignUpActivity.this).load(imageUri).into(profileImageView);
             }
+            grade.setText(user.getGrade());
             name.setText(user.getUserName());
             tel.setText(user.getTel());
             hospital.setText(user.getHospital());
@@ -159,6 +164,8 @@ public class SignUpActivity extends AppCompatActivity {
             email.setClickable(false);
             name.setFocusable(false);
             name.setClickable(false);
+            grade.setFocusable(false);
+            grade.setClickable(false);
             tel.setFocusable(false);
             tel.setClickable(false);
             hospital.setFocusable(false);
@@ -241,14 +248,19 @@ public class SignUpActivity extends AppCompatActivity {
         modifyUser.setUserName(name.getText().toString());
         modifyUser.setUserPassword(user.getUserPassword());
         modifyUser.setUserProfileImageUrl(imageUri);
+        modifyUser.setGrade(grade.getText().toString());
         map.put(user.getUid(), modifyUser);
         FirebaseDatabase.getInstance().getReference().child("Users").updateChildren(map).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Map<String, Object> map = new HashMap<>();
-                //각각의 그룹채팅방에 유저 정보 / 접속여부를 넣음
-                map.put("normalChat/userInfo/" + user.getUid(), modifyUser);
-                map.put("officerChat/userInfo/" + user.getUid(), modifyUser);
+                if(modifyUser.getGrade().equals("임원")){
+                    map.put("normalChat/userInfo/" + user.getUid(), modifyUser);
+                    map.put("officerChat/userInfo/" + user.getUid(), modifyUser);
+                }else{
+                    map.put("normalChat/userInfo/" + user.getUid(), modifyUser);
+                }
+
                 FirebaseDatabase.getInstance().getReference().child("groupChat").updateChildren(map);
                 PreferenceManager.setString(SignUpActivity.this, "name", modifyUser.getUserName());
                 PreferenceManager.setString(SignUpActivity.this, "hospital", modifyUser.getHospital());
@@ -313,14 +325,15 @@ public class SignUpActivity extends AppCompatActivity {
                             return;
                         }
                         final String uid = task.getResult().getUser().getUid();
-                        final User user = new User();
-                        user.setUserName(name.getText().toString());
-                        user.setHospital(hospital.getText().toString());
-                        user.setTel(tel.getText().toString());
-                        user.setUserEmail(email.getText().toString());
-                        user.setUserPassword(password.getText().toString());
-                        user.setPushToken("");
-                        user.setUid(uid);
+                        final User signUser = new User();
+                        signUser.setUserName(name.getText().toString());
+                        signUser.setHospital(hospital.getText().toString());
+                        signUser.setGrade(grade.getText().toString());
+                        signUser.setTel(tel.getText().toString());
+                        signUser.setUserEmail(email.getText().toString());
+                        signUser.setUserPassword(password.getText().toString());
+                        signUser.setPushToken("");
+                        signUser.setUid(uid);
 
                         //회원가입한 후 이름을 저장함.
 //                        UserProfileChangeRequest userProfileChangeRequest = new UserProfileChangeRequest.Builder().setDisplayName(name.getText().toString()).build();
@@ -357,14 +370,14 @@ public class SignUpActivity extends AppCompatActivity {
                                     if (task.isSuccessful()) {
                                         Uri taskResult = task.getResult();
                                         String imageUri = taskResult.toString();
-                                        user.setUserProfileImageUrl(imageUri);
-                                        signUpUser(uid, user, dialog);
+                                        signUser.setUserProfileImageUrl(imageUri);
+                                        signUpUser(uid, signUser, dialog);
                                     }
                                 }
                             });
                         } else {
-                            user.setUserProfileImageUrl("noImg");
-                            signUpUser(uid, user, dialog);
+                            signUser.setUserProfileImageUrl("noImg");
+                            signUpUser(uid, signUser, dialog);
                         }
                     }
 
@@ -372,20 +385,37 @@ public class SignUpActivity extends AppCompatActivity {
                         FirebaseDatabase.getInstance().getReference().child("Users").child(uid).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
+                                PreferenceManager.setString(SignUpActivity.this, "name", user.getUserName());
+                                PreferenceManager.setString(SignUpActivity.this, "hospital", user.getHospital());
+                                PreferenceManager.setString(SignUpActivity.this, "phone", user.getTel());
+                                PreferenceManager.setString(SignUpActivity.this, "uid", user.getUid());
+                                PreferenceManager.setString(SignUpActivity.this, "grade", user.getGrade());
+
                                 Map<String, Object> map = new HashMap<>();
+                                Map<String, Object> map2 = new HashMap<>();
                                 //각각의 그룹채팅방에 유저 정보 / 접속여부를 넣음
-                                map.put("normalChat/userInfo/" + uid, user);
-                                map.put("officerChat/userInfo/" + uid, user);
-                                map.put("normalChat/users/" + uid, false);
-                                map.put("officerChat/users/" + uid, false);
+                                if(user.getGrade().equals("임원")){
+                                    map.put("normalChat/userInfo/" + uid, user);
+                                    map.put("officerChat/userInfo/" + uid, user);
+                                    map.put("normalChat/users/" + uid, false);
+                                    map.put("officerChat/users/" + uid, false);
+                                    map2.put("normalChat/chatName", "일반채팅방");
+                                    map2.put("officerChat/chatName", "임원채팅방");
+                                    map2.put("normalChat/users/" + uid, 0);
+                                    map2.put("officerChat/users/" + uid, 0);
+                                    map2.put("normalChat/existUsers/" + uid, true);
+                                    map2.put("officerChat/existUsers/" + uid, true);
+                                }else{
+                                    map.put("normalChat/userInfo/" + uid, user);
+                                    map.put("normalChat/users/" + uid, false);
+                                    map2.put("normalChat/chatName", "일반채팅방");
+                                    map2.put("normalChat/users/" + uid, 0);
+                                    map2.put("normalChat/existUsers/" + uid, true);
+                                }
+
                                 FirebaseDatabase.getInstance().getReference().child("groupChat").updateChildren(map);
 
                                 //lastChat방에 uid와 안읽은 메세지수 0으로 집어넣음.
-                                Map<String, Object> map2 = new HashMap<>();
-                                map2.put("normalChat/chatName", "일반채팅방");
-                                map2.put("officerChat/chatName", "임원채팅방");
-                                map2.put("normalChat/users/" + uid, 0);
-                                map2.put("officerChat/users/" + uid, 0);
                                 FirebaseDatabase.getInstance().getReference().child("lastChat").updateChildren(map2);
                                 dialog.dismiss();
                                 AlertDialog.Builder builder = new AlertDialog.Builder(SignUpActivity.this);
@@ -400,11 +430,6 @@ public class SignUpActivity extends AppCompatActivity {
                                 builder.setCancelable(false);
                                 builder.create().setCanceledOnTouchOutside(false);
                                 builder.create().show();
-
-                                PreferenceManager.setString(SignUpActivity.this, "name", user.getUserName());
-                                PreferenceManager.setString(SignUpActivity.this, "hospital", user.getHospital());
-                                PreferenceManager.setString(SignUpActivity.this, "phone", user.getTel());
-                                PreferenceManager.setString(SignUpActivity.this, "uid", user.getUid());
 
                             }
                         });

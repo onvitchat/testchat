@@ -127,7 +127,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         notificationManager.notify(id /* ID of notification */, notificationBuilder.build());
             //배지카운트표시
 //        Intent intent1 = new Intent("android.intent.action.BADGE_COUNT_UPDATE");
-//        intent1.putExtra("badge_count",count+1);
+//        intent1.putExtra("badge_count",count);
 //        intent1.putExtra("badge_count_package_name", getPackageName());
 //        intent1.putExtra("badge_count_class_name", getLauncherClassName());
 //        sendBroadcast(intent1);

@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.onvit.chatapp.MainActivity;
+import com.onvit.chatapp.PreferenceManager;
 import com.onvit.chatapp.R;
 import com.onvit.chatapp.chat.GroupMessageActivity;
 import com.onvit.chatapp.model.LastChat;
@@ -44,7 +45,8 @@ import java.util.TimeZone;
 
 public class ChatFragment extends Fragment {
     private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM월dd일");
+    private SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat("HH:mm");
     private ChatRecyclerViewAdapter chatRecyclerViewAdapter = new ChatRecyclerViewAdapter();
     private AppCompatActivity activity;
     private Toolbar chatToolbar;
@@ -53,6 +55,7 @@ public class ChatFragment extends Fragment {
     private List<String> keys = new ArrayList<>();
     private List<String> count = new ArrayList<>();
     private String uid;
+    private List<String> userCount = new ArrayList<>();
     public ChatFragment() {
 
     }
@@ -66,6 +69,7 @@ public class ChatFragment extends Fragment {
         activity.setSupportActionBar(chatToolbar);
         ActionBar actionBar = activity.getSupportActionBar();
         actionBar.setTitle("단체 채팅");
+
         RecyclerView recyclerView = view.findViewById(R.id.chatfragment_recyclerview);
         recyclerView.setAdapter(chatRecyclerViewAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
@@ -83,12 +87,14 @@ public class ChatFragment extends Fragment {
                     chatModels.clear();
                     count.clear();
                     keys.clear();
+                    userCount.clear();
+//                    Log.d("등급11", grade);
                     for (final DataSnapshot item : dataSnapshot.getChildren()) {// normalChat, officerChat
-                        LastChat lastChat = item.getValue(LastChat.class);
+                        final LastChat lastChat = item.getValue(LastChat.class);
                         chatModels.add(lastChat);// 채팅방 밖에 표시할 내용들.
                         keys.add(item.getKey());// normalChat, officerChat 채팅방 이름.
                         count.add(lastChat.getUsers().get(uid) + ""); // 안읽은 숫자
-
+                        userCount.add(lastChat.getExistUsers().size()+"");
                         countEventListener = new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -113,7 +119,7 @@ public class ChatFragment extends Fragment {
 
                 }
             };
-            databaseReference.child("lastChat").addValueEventListener(valueEventListener);
+            databaseReference.child("lastChat").orderByChild("existUsers/"+uid).equalTo(true).addValueEventListener(valueEventListener);
         }
 
         @NonNull
@@ -125,35 +131,40 @@ public class ChatFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull final ChatRecyclerViewAdapter.ChatViewHolder holder, final int position) {
-            Log.d("홀더붙는순서(채팅방)", position + "");
             //position0번 부터 붙음
 
             holder.textView_count.setVisibility(View.INVISIBLE);
             GradientDrawable gradientDrawable = (GradientDrawable) getContext().getDrawable(R.drawable.radius);
             holder.imageView.setBackground(gradientDrawable);
             holder.imageView.setClipToOutline(true);
+
+
             holder.textView_title.setText(chatModels.get(position).getChatName());
 
+            holder.textView_user_count.setText(userCount.get(position));
             //마지막으로 보낸 메세지
-            String lastChat = chatModels.get(position).getLastChat();
-            holder.textView_last_message.setText(lastChat);
 
-            //보낸 시간
-            if (chatModels.get(position).getTimestamp() == null) {
-                holder.textView_timestamp.setVisibility(View.INVISIBLE);
-            } else {
-                simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
-                long unixTime = (long) chatModels.get(position).getTimestamp();
-                Date date = new Date(unixTime);
-                holder.textView_timestamp.setText(simpleDateFormat.format(date));
-                holder.textView_timestamp.setVisibility(View.VISIBLE);
-            }
+                String lastChat = chatModels.get(position).getLastChat();
+                holder.textView_last_message.setText(lastChat);
+                //보낸 시간
+                if (chatModels.get(position).getTimestamp() == null) {
+                    holder.textView_timestamp.setVisibility(View.INVISIBLE);
+                    holder.textView_timestamp2.setVisibility(View.INVISIBLE);
+                } else {
+                    simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
+                    long unixTime = (long) chatModels.get(position).getTimestamp();
+                    Date date = new Date(unixTime);
+                    holder.textView_timestamp.setText(simpleDateFormat.format(date));
+                    holder.textView_timestamp.setVisibility(View.VISIBLE);
+                    holder.textView_timestamp2.setText(simpleDateFormat2.format(date));
+                    holder.textView_timestamp2.setVisibility(View.VISIBLE);
+                }
 
-            //안읽은 메세지 숫자
-            if (!count.get(position).equals("0") && !count.get(position).equals("null")) {
-                holder.textView_count.setText(count.get(position));
-                holder.textView_count.setVisibility(View.VISIBLE);
-            }
+                //안읽은 메세지 숫자
+                if (!count.get(position).equals("0") && !count.get(position).equals("null")) {
+                    holder.textView_count.setText(count.get(position));
+                    holder.textView_count.setVisibility(View.VISIBLE);
+                }
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -205,19 +216,22 @@ public class ChatFragment extends Fragment {
         }
 
         private class ChatViewHolder extends RecyclerView.ViewHolder {
-            public ImageView imageView;
-            public TextView textView_title;
-            public TextView textView_last_message;
-            public TextView textView_timestamp;
-            public TextView textView_count;
-
-            public ChatViewHolder(View view) {
+            private ImageView imageView;
+            private TextView textView_title;
+            private TextView textView_last_message;
+            private TextView textView_timestamp;
+            private TextView textView_timestamp2;
+            private TextView textView_count;
+            private TextView textView_user_count;
+            private ChatViewHolder(View view) {
                 super(view);
                 imageView = view.findViewById(R.id.chatitem_imageview);
                 textView_title = view.findViewById(R.id.chatitem_textview_title);
                 textView_last_message = view.findViewById(R.id.chatitem_textview_lastMessage);
                 textView_timestamp = view.findViewById(R.id.chatitem_textview_timestamp);
+                textView_timestamp2 = view.findViewById(R.id.chatitem_textview_timestamp2);
                 textView_count = view.findViewById(R.id.chatitem_textview_count);
+                textView_user_count = view.findViewById(R.id.user_count);
             }
         }
     }

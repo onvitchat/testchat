@@ -7,8 +7,8 @@ android {
         applicationId "com.onvit.chatapp"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 4
-        versionName "4"
+        versionCode 7
+        versionName "7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

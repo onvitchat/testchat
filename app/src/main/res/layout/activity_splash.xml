@@ -8,10 +8,9 @@
     android:gravity="center"
     tools:context=".SplashActivity">
     <ImageView
-        android:layout_width="386dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/background_light"
-        android:padding="50dp"
-        android:src="@drawable/kcha_logo" />
+        android:src="@drawable/logo_high" />
 
 </LinearLayout>

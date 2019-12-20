@@ -53,8 +53,6 @@ public class PeopleFragment extends Fragment {
         activity.setSupportActionBar(chatToolbar);
         ActionBar actionBar = activity.getSupportActionBar();
         actionBar.setTitle("연락처 목록");
-//        userList = getArguments().getParcelableArrayList("userList");
-        Log.d("피플", "1");
         RecyclerView recyclerView = view.findViewById(R.id.peoplefragment_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
         recyclerView.setAdapter(new PeopleFragmentRecyclerAdapter());
@@ -65,18 +63,15 @@ public class PeopleFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d("피플", "4");
         FirebaseDatabase.getInstance().getReference().child("Users").removeEventListener(valueEventListener);
     }
 
     class PeopleFragmentRecyclerAdapter extends RecyclerView.Adapter<PeopleFragmentRecyclerAdapter.CustomViewHolder> {
 
         public PeopleFragmentRecyclerAdapter() {
-            Log.d("피플", "2");
             valueEventListener = new ValueEventListener() { // Users데이터의 변화가 일어날때마다 콜백으로 호출됨.
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    Log.d("피플", "3");
                     // 가입한 유저들의 정보를 가지고옴.
                     userList.clear();
                     User user = null;

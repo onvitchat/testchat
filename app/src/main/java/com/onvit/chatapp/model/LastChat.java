@@ -2,13 +2,27 @@ package com.onvit.chatapp.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+
 //마지막채팅내용 및 각자 안읽은 메세지 개수 표시.
 public class LastChat {
     private Map<String, Integer> users = new HashMap<>();
+    private Map<String, Boolean> existUsers = new HashMap<>();
     private String chatName;
     private String lastChat;
     private Object timestamp;
     private String photo;
+
+    public LastChat() {
+    }
+
+    public Map<String, Boolean> getExistUsers() {
+        return existUsers;
+    }
+
+    public void setExistUsers(Map<String, Boolean> existUsers) {
+        this.existUsers = existUsers;
+    }
 
     public String getChatName() {
         return chatName;
@@ -60,5 +74,18 @@ public class LastChat {
                 ", timestamp=" + timestamp +
                 ", photo='" + photo + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LastChat lastChat = (LastChat) o;
+        return Objects.equals(chatName, lastChat.chatName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chatName);
     }
 }

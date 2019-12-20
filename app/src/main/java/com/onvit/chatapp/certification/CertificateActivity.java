@@ -68,50 +68,52 @@ public class CertificateActivity extends AppCompatActivity {
         public void getResult(final String name, final String phone, final String birth, final String gender, final String nation) throws JSONException {
             final User user = new User();
             final String newPhone = phone.substring(0,3)+"-"+phone.substring(3,7)+"-"+phone.substring(7);
-            Intent intent = new Intent(CertificateActivity.this, SignUpActivity.class);
-            startActivity(intent);
-            finish();
+//            인증된사람만넘어감.
+            FirebaseDatabase.getInstance().getReference().child("KCHA").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for(DataSnapshot item : dataSnapshot.getChildren()){
+                        KCHA kcha = item.getValue(KCHA.class);
+                        if(kcha.getPhone().equals(newPhone)){
 
-            //인증된사람만넘어감.
-//            FirebaseDatabase.getInstance().getReference().child("KCHA").addListenerForSingleValueEvent(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                    for(DataSnapshot item : dataSnapshot.getChildren()){
-//                        KCHA kcha = item.getValue(KCHA.class);
-//                        if(kcha.getPhone().equals(newPhone)){
-//
-//                            user.setUserName(kcha.getName());
-//                            user.setHospital(kcha.getHospital());
-//                            user.setUserEmail(kcha.getEmail());
-//                            user.setTel(phone);
-//                        }
-//                    }
-//                    if(user.getUserName()==null || user.getUserName().equals("")){
-//                        AlertDialog.Builder builder = new AlertDialog.Builder(CertificateActivity.this);
-//                        builder.setMessage("협의회 회원만 가입 가능합니다.");
-//                        builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialogInterface, int i) {
-//                                    Intent intent = new Intent(CertificateActivity.this, LoginActivity.class);
-//                                    startActivity(intent);
-//                                    finish();
-//                            }
-//                        });
-//                        builder.setCancelable(false);
-//                        builder.create().show();
-//                    }else{
-//                        Intent intent = new Intent(CertificateActivity.this, SignUpActivity.class);
-//                        intent.putExtra("user", user);
-//                        startActivity(intent);
-//                        finish();
-//                    }
-//                }
-//
-//                @Override
-//                public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                }
-//            });
+                            user.setUserName(kcha.getName());
+                            user.setHospital(kcha.getHospital());
+                            user.setUserEmail(kcha.getEmail());
+                            user.setTel(phone);
+                            if(kcha.getGrade().equals("1")){
+                                user.setGrade("임원");
+                            }else{
+                                user.setGrade("일반");
+                            }
+
+                        }
+                    }
+                    if(user.getUserName()==null || user.getUserName().equals("")){
+                        AlertDialog.Builder builder = new AlertDialog.Builder(CertificateActivity.this);
+                        builder.setMessage("협의회 회원만 가입 가능합니다.");
+                        builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                    Intent intent = new Intent(CertificateActivity.this, LoginActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                            }
+                        });
+                        builder.setCancelable(false);
+                        builder.create().show();
+                    }else{
+                        Intent intent = new Intent(CertificateActivity.this, SignUpActivity.class);
+                        intent.putExtra("user", user);
+                        startActivity(intent);
+                        finish();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
 
         }
 

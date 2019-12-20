@@ -9,12 +9,12 @@
 
     <ImageView
         android:id="@+id/chatitem_imageview"
-        android:layout_width="100dp"
+        android:layout_width="80dp"
         android:layout_height="60dp"
         android:layout_margin="10dp"
         android:paddingEnd="10dp"
-        android:scaleType="fitXY"
-        android:src="@drawable/kcha_logo" />
+        android:scaleType="centerCrop"
+        android:src="@drawable/logo_high" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -30,6 +30,16 @@
             android:textSize="24dp"
             android:textStyle="bold"
             tools:text="방 이름" />
+        <TextView
+            android:id="@+id/user_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/chatitem_textview_title"
+            tools:text="숫자"
+            android:textStyle="bold"
+            android:textSize="24dp"
+            android:layout_marginStart="5dp"
+            android:textColor="@android:color/darker_gray"/>
 
         <TextView
             android:id="@+id/chatitem_textview_lastMessage"
@@ -51,13 +61,23 @@
             android:layout_marginEnd="5dp"
             android:textColor="@android:color/darker_gray"
             android:textSize="16dp"
-            tools:text="2011.11.11 11:11" />
+            tools:text="11.11" />
+        <TextView
+            android:id="@+id/chatitem_textview_timestamp2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/chatitem_textview_timestamp"
+            android:layout_alignParentRight="true"
+            android:layout_marginEnd="5dp"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="16dp"
+            tools:text="11:11" />
 
         <TextView
             android:id="@+id/chatitem_textview_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/chatitem_textview_timestamp"
+            android:layout_below="@+id/chatitem_textview_timestamp2"
             android:layout_alignParentRight="true"
             android:layout_marginRight="20dp"
             android:background="@drawable/textview_radius"

@@ -14,7 +14,8 @@
         android:layout_height="150dp"
         android:layout_marginBottom="20dp"
         android:layout_marginTop="-20dp"
-        android:src="@drawable/kcha_logo"
+        android:scaleType="centerCrop"
+        android:src="@drawable/logo_high"
         />
 
     <com.google.android.material.textfield.TextInputLayout

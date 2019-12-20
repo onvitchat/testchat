@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,11 +26,9 @@ import com.onvit.chatapp.fragment.ChatFragment;
 import com.onvit.chatapp.fragment.NoticeFragment;
 import com.onvit.chatapp.fragment.PeopleFragment;
 import com.onvit.chatapp.fragment.ShoppingFragment;
-import com.onvit.chatapp.model.ADlist;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,10 +36,6 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private String text = null;
     private Uri uri = null;
-    private PeopleFragment peopleFragment;
-    private ChatFragment chatFragment;
-    private NoticeFragment noticeFragment;
-    private ShoppingFragment shoppingFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,29 +49,24 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
         getIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        peopleFragment = new PeopleFragment();
-        chatFragment = new ChatFragment();
-        noticeFragment = new NoticeFragment();
-        shoppingFragment = new ShoppingFragment();
-        passPushTokenToServer();
         BottomNavigationView bottomNavigationView = findViewById(R.id.mainActivity_bottomNavigationView);
-        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, noticeFragment).commitAllowingStateLoss();
+        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new NoticeFragment()).commitAllowingStateLoss();
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
                     case R.id.action_notice:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, noticeFragment).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new NoticeFragment()).commitAllowingStateLoss();
                         return true;
                     case R.id.action_people:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, peopleFragment).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new PeopleFragment()).commitAllowingStateLoss();
                         return true;
                     case R.id.action_chat:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, chatFragment).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ChatFragment()).commitAllowingStateLoss();
                         return true;
                     case R.id.action_account:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, shoppingFragment).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ShoppingFragment()).commitAllowingStateLoss();
                         return true;
 
                 }
@@ -88,18 +76,18 @@ public class MainActivity extends AppCompatActivity {
         if (getIntent().getStringExtra("text") != null || getIntent().getParcelableExtra("shareUri") != null) {
             text = getIntent().getStringExtra("text");
             uri = getIntent().getParcelableExtra("shareUri");
+            String filePath = getIntent().getStringExtra("filePath");
             Intent intent1 = new Intent(MainActivity.this, SelectGroupChatActivity.class);
             intent1.putExtra("text", text);
             intent1.putExtra("shareUri", uri);
+            intent1.putExtra("filePath", filePath);
             startActivity(intent1);
         }
 
         requestPermission();
-
+        passPushTokenToServer();
 
     }
-
-
 
 
     private void requestPermission() {
@@ -157,8 +145,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (getIntent().getStringExtra("fcm") != null) {
-            Log.d("들어옴?", "");
-            getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, chatFragment).commitAllowingStateLoss();
+            getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ChatFragment()).commitAllowingStateLoss();
         }
     }
 
@@ -173,7 +160,10 @@ public class MainActivity extends AppCompatActivity {
 
                 FirebaseDatabase.getInstance().getReference().child("Users").child(uid).updateChildren(map);
                 FirebaseDatabase.getInstance().getReference().child("groupChat").child("normalChat").child("userInfo").child(uid).updateChildren(map);
-                FirebaseDatabase.getInstance().getReference().child("groupChat").child("officerChat").child("userInfo").child(uid).updateChildren(map);
+
+                if (PreferenceManager.getString(MainActivity.this, "grade").equals("임원")) {
+                    FirebaseDatabase.getInstance().getReference().child("groupChat").child("officerChat").child("userInfo").child(uid).updateChildren(map);
+                }
             }
         });
 
@@ -197,7 +187,9 @@ public class MainActivity extends AppCompatActivity {
             map.put("pushToken", "");
             FirebaseDatabase.getInstance().getReference().child("Users").child(uid).updateChildren(map);
             FirebaseDatabase.getInstance().getReference().child("groupChat").child("normalChat").child("userInfo").child(uid).updateChildren(map);
-            FirebaseDatabase.getInstance().getReference().child("groupChat").child("officerChat").child("userInfo").child(uid).updateChildren(map);
+            if (PreferenceManager.getString(MainActivity.this, "grade").equals("임원")){
+                FirebaseDatabase.getInstance().getReference().child("groupChat").child("officerChat").child("userInfo").child(uid).updateChildren(map);
+            }
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.putExtra("logOut", "logOut");
             PreferenceManager.clear(this);

@@ -1,6 +1,8 @@
 package com.onvit.chatapp;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -15,6 +17,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.onvit.chatapp.certification.CertificateActivity;
 import com.onvit.chatapp.model.User;
@@ -40,8 +44,8 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
     private ValueEventListener valueEventListener;
-    private List<User> userList;
     private AlertDialog dialog;
+    private final static int PERMISSION_REQUEST_CODE = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,35 +101,27 @@ public class LoginActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if(user!=null){
                     //로그인
-                    userList = new ArrayList<>();
                     valueEventListener = new ValueEventListener() { // Users데이터의 변화가 일어날때마다 콜백으로 호출됨.
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             // 가입한 유저들의 정보를 가지고옴.
-                            userList.clear();
                             User user = null;
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(snapshot.getValue(User.class).getUid())) {
                                     user = snapshot.getValue(User.class);
-                                    PreferenceManager.setString(LoginActivity.this,"name", user.getUserName());
-                                    PreferenceManager.setString(LoginActivity.this,"hospital", user.getHospital());
-                                    PreferenceManager.setString(LoginActivity.this,"phone", user.getTel());
+                                    PreferenceManager.setString(LoginActivity.this, "name", user.getUserName());
+                                    PreferenceManager.setString(LoginActivity.this, "hospital", user.getHospital());
+                                    PreferenceManager.setString(LoginActivity.this, "phone", user.getTel());
+                                    PreferenceManager.setString(LoginActivity.this, "uid", user.getUid());
+                                    PreferenceManager.setString(LoginActivity.this, "grade", user.getGrade());
                                     continue;
                                 }
-                                userList.add(snapshot.getValue(User.class));
                             }
-                            // 유저들의 정보를 가나순으로 정렬하고 자신의 정보는 첫번째에 넣음.
-                            Collections.sort(userList);
-                            userList.add(0, user);
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.putParcelableArrayListExtra("userList", (ArrayList<? extends Parcelable>) userList);
                             intent.setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
                             dialog.dismiss();
                             finish();
-                            if(valueEventListener!=null){
-                                FirebaseDatabase.getInstance().getReference().child("Users").removeEventListener(valueEventListener);
-                            }
                         }
 
                         @Override
@@ -143,10 +139,58 @@ public class LoginActivity extends AppCompatActivity {
         getWindow().setStatusBarColor(Color.parseColor("#050099"));
         signup.setBackgroundColor(Color.parseColor("#050099"));
         login.setBackgroundColor(Color.parseColor("#050099"));
-
+        requestPermission();
 
     }
+    private void requestPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+            int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+            ArrayList<String> arrayPermission = new ArrayList<>();
 
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                arrayPermission.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+
+            permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                arrayPermission.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            }
+
+            if (arrayPermission.size() > 0) {
+                String strArray[] = new String[arrayPermission.size()];
+                strArray = arrayPermission.toArray(strArray);
+                ActivityCompat.requestPermissions(this, strArray, PERMISSION_REQUEST_CODE);
+            } else {
+                // Initialize 코드
+            }
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE: {
+                if (grantResults.length < 1) {
+                    Toast.makeText(this, "권한을 받아오는데 실패하였습니다.", Toast.LENGTH_SHORT).show();
+                    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                    return;
+                }
+
+                for (int i = 0; i < grantResults.length; i++) {
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(this, "권한을 거부하였습니다.", Toast.LENGTH_SHORT).show();
+
+                        return;
+                    }
+                }
+
+                Toast.makeText(this, "권한을 허용하였습니다.", Toast.LENGTH_SHORT).show();
+                // Initialize 코드
+            }
+            break;
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
     void loginEvent() {
         if(id.getText().toString()==null || id.getText().toString().equals("") || password.getText().toString()==null || password.getText().toString().equals("")){
             return;
@@ -182,6 +226,15 @@ public class LoginActivity extends AppCompatActivity {
         super.onStop();
         if(authStateListener!=null){
             firebaseAuth.removeAuthStateListener(authStateListener);
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(valueEventListener!=null){
+            FirebaseDatabase.getInstance().getReference().child("Users").removeEventListener(valueEventListener);
         }
     }
 }

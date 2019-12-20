@@ -3,14 +3,17 @@ package com.onvit.chatapp.model;
 public class KCHA {
     private String name;
     private String hospital;
-    private String sNo;
-    private String mNo;
+    private String phone;
     private String major;
     private String address;
     private String email;
-    private String phone;
     private String tel;
     private String fax;
+    private String mNo;
+    private String grade;
+
+    public KCHA() {
+    }
 
     public String getName() {
         return name;
@@ -28,20 +31,12 @@ public class KCHA {
         this.hospital = hospital;
     }
 
-    public String getsNo() {
-        return sNo;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setsNo(String sNo) {
-        this.sNo = sNo;
-    }
-
-    public String getmNo() {
-        return mNo;
-    }
-
-    public void setmNo(String mNo) {
-        this.mNo = mNo;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getMajor() {
@@ -68,14 +63,6 @@ public class KCHA {
         this.email = email;
     }
 
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
     public String getTel() {
         return tel;
     }
@@ -92,19 +79,35 @@ public class KCHA {
         this.fax = fax;
     }
 
+    public String getmNo() {
+        return mNo;
+    }
+
+    public void setmNo(String mNo) {
+        this.mNo = mNo;
+    }
+
+    public String getGrade() {
+        return grade;
+    }
+
+    public void setGrade(String grade) {
+        this.grade = grade;
+    }
+
     @Override
     public String toString() {
         return "KCHA{" +
                 "name='" + name + '\'' +
                 ", hospital='" + hospital + '\'' +
-                ", sNo='" + sNo + '\'' +
-                ", mNo='" + mNo + '\'' +
+                ", phone='" + phone + '\'' +
                 ", major='" + major + '\'' +
                 ", address='" + address + '\'' +
                 ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
                 ", tel='" + tel + '\'' +
                 ", fax='" + fax + '\'' +
+                ", mNo='" + mNo + '\'' +
+                ", grade='" + grade + '\'' +
                 '}';
     }
 }

@@ -13,6 +13,7 @@ public class User implements Comparable<User>, Parcelable {
     private String comment;
     private String tel;
     private String hospital;
+    private String grade;
 
     public User(){
 
@@ -28,6 +29,7 @@ public class User implements Comparable<User>, Parcelable {
         comment = in.readString();
         tel = in.readString();
         hospital = in.readString();
+        grade = in.readString();
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
@@ -41,6 +43,30 @@ public class User implements Comparable<User>, Parcelable {
             return new User[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userName='" + userName + '\'' +
+                ", userEmail='" + userEmail + '\'' +
+                ", userPassword='" + userPassword + '\'' +
+                ", userProfileImageUrl='" + userProfileImageUrl + '\'' +
+                ", uid='" + uid + '\'' +
+                ", pushToken='" + pushToken + '\'' +
+                ", comment='" + comment + '\'' +
+                ", tel='" + tel + '\'' +
+                ", hospital='" + hospital + '\'' +
+                ", grade='" + grade + '\'' +
+                '}';
+    }
+
+    public String getGrade() {
+        return grade;
+    }
+
+    public void setGrade(String grade) {
+        this.grade = grade;
+    }
 
     public String getHospital() {
         return hospital;
@@ -115,19 +141,6 @@ public class User implements Comparable<User>, Parcelable {
     }
 
     @Override
-    public String toString() {
-        return "User{" +
-                "userName='" + userName + '\'' +
-                ", userEmail='" + userEmail + '\'' +
-                ", userPassword='" + userPassword + '\'' +
-                ", userProfileImageUrl='" + userProfileImageUrl + '\'' +
-                ", uid='" + uid + '\'' +
-                ", pushToken='" + pushToken + '\'' +
-                ", comment='" + comment + '\'' +
-                '}';
-    }
-
-    @Override
     public int describeContents() {
         return 0;
     }
@@ -143,6 +156,7 @@ public class User implements Comparable<User>, Parcelable {
         parcel.writeString(comment);
         parcel.writeString(tel);
         parcel.writeString(hospital);
+        parcel.writeString(grade);
     }
 
     @Override

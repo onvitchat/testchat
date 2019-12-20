@@ -36,6 +36,7 @@
         <activity android:name=".chat.SelectGroupChatActivity" />
         <activity
             android:name=".chat.GroupMessageActivity"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/AppTheme.chatStatusBar" />
         <activity
             android:name=".MainActivity"

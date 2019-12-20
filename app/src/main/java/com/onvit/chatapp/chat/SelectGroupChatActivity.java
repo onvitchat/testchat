@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.onvit.chatapp.LoginActivity;
+import com.onvit.chatapp.PreferenceManager;
 import com.onvit.chatapp.R;
 import com.onvit.chatapp.model.LastChat;
 import com.onvit.chatapp.model.ChatModel;
@@ -115,7 +116,6 @@ public class SelectGroupChatActivity extends AppCompatActivity {
                         keys.add(item.getKey());// normalChat, officerChat 채팅방 이름.
                         count.add(lastChat.getUsers().get(uid) + ""); // 안읽은 숫자.
 
-
                         countEventListener = new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -140,7 +140,7 @@ public class SelectGroupChatActivity extends AppCompatActivity {
 
                 }
             };
-            databaseReference.child("lastChat").addValueEventListener(valueEventListener);
+            databaseReference.child("lastChat").orderByChild("existUsers/"+uid).equalTo(true).addValueEventListener(valueEventListener);
         }
 
         @NonNull
@@ -193,9 +193,6 @@ public class SelectGroupChatActivity extends AppCompatActivity {
                             databaseReference.child("groupChat").child(keys.get(position)).child("comments").orderByChild("readUsers/" + uid).equalTo(false).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot == null) {
-                                        return;
-                                    }
                                     Map<String, Object> map = new HashMap<>();
                                     for (DataSnapshot item : dataSnapshot.getChildren()) {
                                         ChatModel.Comment comment = item.getValue(ChatModel.Comment.class);
@@ -215,6 +212,9 @@ public class SelectGroupChatActivity extends AppCompatActivity {
                                                 intent.putExtra("shareText", text);
                                             }
                                             if (uri != null) {
+                                                Log.d("파일Select", uri.toString());
+                                                Log.d("파일 경로c", getIntent().getStringExtra("filePath"));
+                                                intent.putExtra("filePath", getIntent().getStringExtra("filePath"));
                                                 intent.putExtra("shareUri", uri);
                                             }
 
