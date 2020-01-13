@@ -25,6 +25,7 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.text.SpannableString;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -133,6 +134,19 @@ public class NoticeActivity extends AppCompatActivity implements View.OnClickLis
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         registration_ids = getIntent().getStringArrayListExtra("userList");
         if(getIntent().getStringExtra("modify")!=null){
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(NoticeActivity.this);
+            builder.setMessage("수정 시 새 이미지를 첨부하면 원래 올렸던 사진은 삭제됩니다.");
+            builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
+
             noticeName = "공지사항 수정";
             insertNotice.setText("공지사항수정");
             title.setText(getIntent().getStringExtra("title"));
