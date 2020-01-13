@@ -54,7 +54,6 @@
             android:layout_height="200dp"
             android:background="@drawable/edit_border"
             android:gravity="top"
-            android:inputType="textMultiLine"
             android:padding="10dp"
             android:scrollHorizontally="false"
             android:textSize="20dp" />

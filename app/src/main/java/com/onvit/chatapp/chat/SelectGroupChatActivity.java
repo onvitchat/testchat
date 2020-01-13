@@ -219,7 +219,6 @@ public class SelectGroupChatActivity extends AppCompatActivity {
                                             }
 
                                             ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(SelectGroupChatActivity.this, R.anim.fromright, R.anim.toleft);
-
                                             startActivity(intent, activityOptions.toBundle());
                                             finish();
                                         }

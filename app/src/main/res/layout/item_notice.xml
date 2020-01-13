@@ -66,13 +66,14 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/layout_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/notice_title"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:ellipsize="end"
@@ -81,41 +82,6 @@
             android:textColor="@color/black"
             android:textSize="25dp"
             tools:text="공지사항 타이틀" />
-
-        <ToggleButton
-            android:id="@+id/toggle_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_keyboard_arrow_down_black_24dp"
-            android:textOff=""
-            android:textOn="" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/content_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
-
-        <TextView
-            android:id="@+id/notice_title2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:padding="10dp"
-            android:textColor="@android:color/background_dark"
-            android:textSize="20dp"
-            tools:text="게시물 제목" />
-
-        <TextView
-            android:id="@+id/notice_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:background="@drawable/custom_textview"
-            android:padding="10dp"
-            android:textSize="20dp"
-            tools:text="게시물 상세 내용" />
-    </LinearLayout>
 </LinearLayout>

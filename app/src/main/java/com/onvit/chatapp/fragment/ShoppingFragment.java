@@ -28,7 +28,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.onvit.chatapp.ad.ADActivity;
 import com.onvit.chatapp.MainActivity;
 import com.onvit.chatapp.R;
-import com.google.firebase.auth.FirebaseAuth;
 import com.onvit.chatapp.model.ADlist;
 
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ import java.util.List;
 public class ShoppingFragment extends Fragment {
     private AppCompatActivity activity;
     private Toolbar chatToolbar;
-    private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     private ShoppingFragmentRecyclerAdapter ShoppingFragmentRecyclerAdapter;
     private List<ADlist> advertisement = new ArrayList<>();
     public ShoppingFragment() {
@@ -52,7 +50,7 @@ public class ShoppingFragment extends Fragment {
         activity = (MainActivity) getActivity();
         activity.setSupportActionBar(chatToolbar);
         ActionBar actionBar = activity.getSupportActionBar();
-        actionBar.setTitle("공동구매");
+        actionBar.setTitle("구매");
         final RecyclerView recyclerView = view.findViewById(R.id.fragment_shop_recycler);
         //광고
         FirebaseDatabase.getInstance().getReference().child("ADlist").addListenerForSingleValueEvent(new ValueEventListener() {

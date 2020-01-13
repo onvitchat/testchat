@@ -1,16 +1,18 @@
 package com.onvit.chatapp;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private String text = null;
     private Uri uri = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,29 +94,24 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void requestPermission() {
-        if (android.os.Build.VERSION.SDK_INT >= 23) {
-            int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-            ArrayList<String> arrayPermission = new ArrayList<>();
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        ArrayList<String> arrayPermission = new ArrayList<>();
 
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                arrayPermission.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-            }
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            arrayPermission.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
 
-            permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                arrayPermission.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            arrayPermission.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
 
-            if (arrayPermission.size() > 0) {
-                String strArray[] = new String[arrayPermission.size()];
-                strArray = arrayPermission.toArray(strArray);
-                ActivityCompat.requestPermissions(this, strArray, PERMISSION_REQUEST_CODE);
-            } else {
-                // Initialize 코드
-            }
+        if (arrayPermission.size() > 0) {
+            String[] strArray = new String[arrayPermission.size()];
+            strArray = arrayPermission.toArray(strArray);
+            ActivityCompat.requestPermissions(this, strArray, PERMISSION_REQUEST_CODE);
         }
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
@@ -123,17 +121,49 @@ public class MainActivity extends AppCompatActivity {
                     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
                     return;
                 }
-
                 for (int i = 0; i < grantResults.length; i++) {
-                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(this, "권한을 거부하였습니다.", Toast.LENGTH_SHORT).show();
-
-                        return;
+                    String permission = permissions[i];
+                    if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                        boolean showRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, permission);
+                        if(!showRationale){
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setMessage("앱의 원활한 사용을 위해 권한을 허용해야 합니다. 앱 정보로 이동합니다.\n [저장공간]권한을 허용해주세요.");
+                            builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                    intent.setData(uri);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.setCancelable(false);
+                            dialog.setCanceledOnTouchOutside(false);
+                            dialog.show();
+                        }else{
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setMessage("앱의 원활한 사용을 위해 권한을 허용해야 합니다.");
+                            builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    requestPermission();
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.setCancelable(false);
+                            dialog.setCanceledOnTouchOutside(false);
+                            dialog.show();
+                        }
+                    }else{
+                        Toast.makeText(this, "권한을 허용하였습니다.", Toast.LENGTH_SHORT).show();
+                        // Initialize 코드
                     }
                 }
 
-                Toast.makeText(this, "권한을 허용하였습니다.", Toast.LENGTH_SHORT).show();
-                // Initialize 코드
+
+
             }
             break;
         }
@@ -144,9 +174,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (getIntent().getStringExtra("fcm") != null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ChatFragment()).commitAllowingStateLoss();
+        if(getIntent().getStringExtra("tag")!=null){
+            if (getIntent().getStringExtra("tag").equals("normalChat") || getIntent().getStringExtra("tag").equals("officerChat")) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.mainActivity_fragmentLayout, new ChatFragment()).commitAllowingStateLoss();
+            }
         }
+
     }
 
     void passPushTokenToServer() {
@@ -187,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
             map.put("pushToken", "");
             FirebaseDatabase.getInstance().getReference().child("Users").child(uid).updateChildren(map);
             FirebaseDatabase.getInstance().getReference().child("groupChat").child("normalChat").child("userInfo").child(uid).updateChildren(map);
-            if (PreferenceManager.getString(MainActivity.this, "grade").equals("임원")){
+            if (PreferenceManager.getString(MainActivity.this, "grade").equals("임원")) {
                 FirebaseDatabase.getInstance().getReference().child("groupChat").child("officerChat").child("userInfo").child(uid).updateChildren(map);
             }
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);

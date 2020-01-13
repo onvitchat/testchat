@@ -33,9 +33,9 @@ public class ADActivity extends AppCompatActivity {
 
         imageView = findViewById(R.id.ad_img_view);
         String img = getIntent().getStringExtra("ad");
-        imgTask = new ImgTask();
-        imgTask.execute(img);
-//        Glide.with(this).load(Uri.parse(img)).apply(new RequestOptions().centerCrop()).into(imageView);
+//        imgTask = new ImgTask();
+//        imgTask.execute(img);
+        Glide.with(this).load(Uri.parse(img)).apply(new RequestOptions().fitCenter()).into(imageView);
     }
 
     class ImgTask extends AsyncTask<String, Void, String>{

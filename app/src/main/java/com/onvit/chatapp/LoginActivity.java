@@ -1,11 +1,15 @@
 package com.onvit.chatapp;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -56,6 +60,7 @@ public class LoginActivity extends AppCompatActivity {
 
         String logOut = getIntent().getStringExtra("logOut");
         if(logOut!=null && logOut.equals("logOut")){
+            Log.d("로그아웃", "00");
             firebaseAuth.signOut();
         }
 
@@ -89,7 +94,7 @@ public class LoginActivity extends AppCompatActivity {
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(LoginActivity.this, CertificateActivity.class));
+                startActivity(new Intent(LoginActivity.this, SignUpActivity.class));
                 finish();
             }
         });
@@ -101,6 +106,7 @@ public class LoginActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if(user!=null){
                     //로그인
+                    Log.d("로그아웃", "11");
                     valueEventListener = new ValueEventListener() { // Users데이터의 변화가 일어날때마다 콜백으로 호출됨.
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -114,14 +120,21 @@ public class LoginActivity extends AppCompatActivity {
                                     PreferenceManager.setString(LoginActivity.this, "phone", user.getTel());
                                     PreferenceManager.setString(LoginActivity.this, "uid", user.getUid());
                                     PreferenceManager.setString(LoginActivity.this, "grade", user.getGrade());
-                                    continue;
                                 }
                             }
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
-                            dialog.dismiss();
-                            finish();
+                            if(user != null){
+                                Log.d("로그아웃", "22");
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                intent.setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                                dialog.dismiss();
+                                finish();
+                            }else{
+                                Log.d("로그아웃", "33");
+                                Toast.makeText(LoginActivity.this, "회원정보를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                            }
+
                         }
 
                         @Override
@@ -132,65 +145,15 @@ public class LoginActivity extends AppCompatActivity {
                     FirebaseDatabase.getInstance().getReference().child("Users").addValueEventListener(valueEventListener);
                 }else{
 
-            }
+                }
             }
         };
 
-        getWindow().setStatusBarColor(Color.parseColor("#050099"));
-        signup.setBackgroundColor(Color.parseColor("#050099"));
-        login.setBackgroundColor(Color.parseColor("#050099"));
-        requestPermission();
-
+//        getWindow().setStatusBarColor(Color.parseColor("#FFFFFF"));
+//        signup.setBackgroundColor(Color.parseColor("#1F50B5"));
+//        login.setBackgroundColor(Color.parseColor("#1F50B5"));
     }
-    private void requestPermission() {
-        if (android.os.Build.VERSION.SDK_INT >= 23) {
-            int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-            ArrayList<String> arrayPermission = new ArrayList<>();
 
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                arrayPermission.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-            }
-
-            permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                arrayPermission.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            }
-
-            if (arrayPermission.size() > 0) {
-                String strArray[] = new String[arrayPermission.size()];
-                strArray = arrayPermission.toArray(strArray);
-                ActivityCompat.requestPermissions(this, strArray, PERMISSION_REQUEST_CODE);
-            } else {
-                // Initialize 코드
-            }
-        }
-    }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_CODE: {
-                if (grantResults.length < 1) {
-                    Toast.makeText(this, "권한을 받아오는데 실패하였습니다.", Toast.LENGTH_SHORT).show();
-                    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                    return;
-                }
-
-                for (int i = 0; i < grantResults.length; i++) {
-                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(this, "권한을 거부하였습니다.", Toast.LENGTH_SHORT).show();
-
-                        return;
-                    }
-                }
-
-                Toast.makeText(this, "권한을 허용하였습니다.", Toast.LENGTH_SHORT).show();
-                // Initialize 코드
-            }
-            break;
-        }
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
     void loginEvent() {
         if(id.getText().toString()==null || id.getText().toString().equals("") || password.getText().toString()==null || password.getText().toString().equals("")){
             return;

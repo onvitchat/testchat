@@ -42,7 +42,7 @@ import jxl.Workbook;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private final long VERSION_CODE = 7; // gradle버전이랑 맞춰야됨. firebase remoteconfig도 같이 맞춰야됨.
+    private final long VERSION_CODE = 11; // gradle버전이랑 맞춰야됨. firebase remoteconfig도 같이 맞춰야됨.
 
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private FirebaseAuth firebaseAuth;
@@ -57,16 +57,14 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         getIntent().addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().setStatusBarColor(Color.parseColor("#050099"));
 
         firebaseAuth = FirebaseAuth.getInstance();
 //        firebaseAuth.signOut();
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-                .setMinimumFetchIntervalInSeconds(3600) // 한시간에 최대 한번 요청할 수 있음.
+                .setMinimumFetchIntervalInSeconds(0) // 한시간에 최대 한번 요청할 수 있음. 한시간의 캐싱타임을 가짐.
                 .build();
         mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
-        mFirebaseRemoteConfig.setDefaultsAsync(R.xml.default_config);
 
 
         mFirebaseRemoteConfig.fetchAndActivate()
@@ -140,10 +138,24 @@ public class SplashActivity extends AppCompatActivity {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     // 가입한 유저들의 정보를 가지고옴.
                     User user = null;
+                    String key = null;
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(snapshot.getValue(User.class).getUid())) {
                             user = snapshot.getValue(User.class);
-                            continue;
+                            key = snapshot.getKey();
+                        }
+                        if(snapshot.getValue(User.class).getUserName()==null){
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("Users/"+snapshot.getKey(), null);
+                            map.put("groupChat/normalChat/userInfo/"+snapshot.getKey(), null);
+                            map.put("groupChat/officerChat/userInfo/"+snapshot.getKey(), null);
+                            map.put("groupChat/normalChat/users/"+snapshot.getKey(), null);
+                            map.put("groupChat/officerChat/users/"+snapshot.getKey(), null);
+                            map.put("lastChat/normalChat/existUsers/"+snapshot.getKey(), null);
+                            map.put("lastChat/officerChat/existUsers/"+snapshot.getKey(), null);
+                            map.put("lastChat/normalChat/users/"+snapshot.getKey(), null);
+                            map.put("lastChat/officerChat/users/"+snapshot.getKey(), null);
+                            FirebaseDatabase.getInstance().getReference().updateChildren(map);
                         }
 
                     }
@@ -169,6 +181,8 @@ public class SplashActivity extends AppCompatActivity {
                                 Intent intent1 = new Intent(SplashActivity.this, MainActivity.class);
                                 uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                                 final Uri convertUri = getConvertUri(uri);
+                                Log.d("이미지 공유", uri+"");
+                                Log.d("이미지 공유", convertUri+"");
                                 if (convertUri != null) {
                                     intent1.putExtra("shareUri", convertUri);
                                     intent1.putExtra("filePath", filePath);
@@ -177,12 +191,21 @@ public class SplashActivity extends AppCompatActivity {
                                 startActivity(intent1);
                                 finish();
                             }
-                        } else {
+                        } else if(getIntent().getStringExtra("tag")!=null){
+                            Intent intent2 = new Intent(SplashActivity.this, MainActivity.class);
+                            intent2.putExtra("tag",getIntent().getStringExtra("tag"));
+                            intent2.setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent2);
+                            finish();
+
+                        }else{
                             Intent intent2 = new Intent(SplashActivity.this, MainActivity.class);
                             intent2.setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent2);
                             finish();
                         }
+
+
                     }
                 }
 

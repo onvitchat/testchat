@@ -8,7 +8,7 @@
     </style>
 
     <style name="AppTheme.chatStatusBar" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:statusBarColor">#A9BDCE</item>
+        <item name="android:statusBarColor">#DBE1EF</item>
         <!--Status Bar 글자색깔-->
         <item name="android:windowLightStatusBar">true</item>
     </style>

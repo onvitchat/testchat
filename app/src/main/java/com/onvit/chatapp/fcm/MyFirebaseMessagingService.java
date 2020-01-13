@@ -92,9 +92,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             id=0;
         }else if(tag.equals("officerChat")){
             id=1;
+        }else if(tag.equals("notice")){
+            id=2;
         }
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//        intent.putExtra("fcm", "fcm");
+        intent.putExtra("tag", tag);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT); // 원격으로 인텐트 실행하는거 앱이 꺼져있어도 실행하는거
         String channelId = getString(R.string.default_notification_channel_id);
@@ -105,7 +107,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setContentText(remoteMessage.getData().get("text"))
                         .setAutoCancel(true) // 누르면 알림 없어짐
                         .setSound(defaultSoundUri)
-                        .setDefaults(Notification.DEFAULT_ALL)
+                        .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
+                        .setVibrate(new long[]{0L})
 //                        .setFullScreenIntent(pendingIntent, true)
                         .setContentIntent(pendingIntent);
 

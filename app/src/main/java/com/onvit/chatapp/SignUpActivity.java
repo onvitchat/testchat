@@ -44,7 +44,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.onvit.chatapp.model.NoticeList;
+import com.onvit.chatapp.model.Notice;
 import com.onvit.chatapp.model.User;
 
 import java.io.ByteArrayOutputStream;
@@ -77,7 +77,7 @@ public class SignUpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
-        getWindow().setStatusBarColor(Color.parseColor("#050099"));
+//        getWindow().setStatusBarColor(Color.parseColor("#1F50B5"));
         imageUri = null;
         profileImageView = findViewById(R.id.signupActivity_imageview_profile);
 
@@ -109,25 +109,27 @@ public class SignUpActivity extends AppCompatActivity {
         tEmail.setErrorEnabled(true);
         tPassword.setErrorEnabled(true);
         signup = findViewById(R.id.signupActivity_button_signup);
-        signup.setBackgroundColor(Color.parseColor("#050099"));
         password.setImeOptions(EditorInfo.IME_ACTION_DONE);
 
 
         if (getIntent().getParcelableExtra("modify") == null) {
-            final User joinUser = getIntent().getParcelableExtra("user");
-            grade.setText(joinUser.getGrade());
-            name.setText(joinUser.getUserName());
-            tel.setText(joinUser.getTel());
-            email.setText(joinUser.getUserEmail());
-            hospital.setText(joinUser.getHospital());
+//            final User joinUser = getIntent().getParcelableExtra("user");
+//            grade.setText(joinUser.getGrade());
+//            name.setText(joinUser.getUserName());
+//            tel.setText(joinUser.getTel());
+//            email.setText(joinUser.getUserEmail());
+//            hospital.setText(joinUser.getHospital());
+//            grade.setFocusable(false);
+//            grade.setClickable(false);
+//            name.setFocusable(false);
+//            name.setClickable(false);
+//            tel.setFocusable(false);
+//            tel.setClickable(false);
+//            hospital.setFocusable(false);
+//            hospital.setClickable(false);
+            grade.setText("임원");
             grade.setFocusable(false);
             grade.setClickable(false);
-            name.setFocusable(false);
-            name.setClickable(false);
-            tel.setFocusable(false);
-            tel.setClickable(false);
-            hospital.setFocusable(false);
-            hospital.setClickable(false);
             signup.setText("회원가입");
             password.setOnEditorActionListener(new TextView.OnEditorActionListener() { // 완료눌러도 회원가입기능되게~
                 @Override
@@ -275,7 +277,7 @@ public class SignUpActivity extends AppCompatActivity {
                             finish();
                         } else {
                             for (DataSnapshot item : dataSnapshot.getChildren()) {
-                                NoticeList notice = item.getValue(NoticeList.class);
+                                Notice notice = item.getValue(Notice.class);
                                 notice.setName(PreferenceManager.getString(SignUpActivity.this, "name") + "(" + PreferenceManager.getString(SignUpActivity.this, "hospital") + ")");
                                 Map<String, Object> map = new HashMap<>();
                                 map.put(item.getKey(), notice);
@@ -311,7 +313,6 @@ public class SignUpActivity extends AppCompatActivity {
         dialog.setCanceledOnTouchOutside(false);
         dialog.setCancelable(false);
         dialog.show();
-
         FirebaseAuth.getInstance()
                 .createUserWithEmailAndPassword(email.getText().toString(), password.getText().toString()) // 비밀번호 6자리 이상으로 해야함. 안그러면 firebase에러뜸.
                 .addOnCompleteListener(SignUpActivity.this, new OnCompleteListener<AuthResult>() {
@@ -451,7 +452,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private Boolean checkInfo() {
-        if (name.getText().toString().replace(" ", "").equals("") || name.getText().toString() == null) {
+        if (name.getText().toString().replace(" ", "").equals("")) {
             tEmail.setError("");
             tTel.setError("");
             tPassword.setError("");
@@ -459,7 +460,7 @@ public class SignUpActivity extends AppCompatActivity {
             tName.setError("이름을 입력하세요.");
             return true;
         }
-        if (hospital.getText().toString().replace(" ", "").equals("") || hospital.getText().toString() == null) {
+        if (hospital.getText().toString().replace(" ", "").equals("")) {
             tEmail.setError("");
             tTel.setError("");
             tPassword.setError("");
@@ -467,7 +468,7 @@ public class SignUpActivity extends AppCompatActivity {
             tHospital.setError("병원을 입력하세요.");
             return true;
         }
-        if (tel.getText().toString().replace(" ", "").equals("") || tel.getText().toString() == null) {
+        if (tel.getText().toString().replace(" ", "").equals("")) {
             tEmail.setError("");
             tPassword.setError("");
             tHospital.setError("");
@@ -475,7 +476,7 @@ public class SignUpActivity extends AppCompatActivity {
             tTel.setError("전화번호을 입력하세요.");
             return true;
         }
-        if (email.getText().toString().replace(" ", "").equals("") || email.getText().toString() == null) {
+        if (email.getText().toString().replace(" ", "").equals("")) {
             tName.setError("");
             tTel.setError("");
             tPassword.setError("");
@@ -483,7 +484,7 @@ public class SignUpActivity extends AppCompatActivity {
             tEmail.setError("이메일을 입력하세요.");
             return true;
         }
-        if (password.getText().toString().replace(" ", "").equals("") || password.getText().toString() == null || password.getText().length() < 6) {
+        if (password.getText().toString().replace(" ", "").equals("") || password.getText().length() < 6) {
             tEmail.setError("");
             tTel.setError("");
             tName.setError("");
@@ -530,7 +531,7 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             profileImageView.setImageURI(data.getData()); // 회원가입에 있는 이미지뷰를 바꿈
             imageUri = data.getData();//이미지 경로 원본
             filePath = getRealPathFromURI(imageUri);

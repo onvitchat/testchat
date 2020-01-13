@@ -1,16 +1,14 @@
 package com.onvit.chatapp.fragment;
 
+import android.app.ActivityOptions;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -23,12 +21,12 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,31 +35,35 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
 import com.onvit.chatapp.MainActivity;
-import com.onvit.chatapp.PreferenceManager;
+import com.onvit.chatapp.NoticeActivity;
 import com.onvit.chatapp.R;
-import com.onvit.chatapp.model.NoticeList;
+import com.onvit.chatapp.model.Notice;
+import com.onvit.chatapp.model.User;
+import com.vlk.multimager.utils.Image;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class NoticeFragment extends Fragment {
     private AppCompatActivity activity;
     private Toolbar chatToolbar;
-    private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-    private List<NoticeList> noticeLists = new ArrayList<>();
+    private List<Notice> noticeLists = new ArrayList<>();
     private DatabaseReference firebaseDatabase;
     private String uid;
     private NoticeFragmentRecyclerAdapter noticeFragmentRecyclerAdapter;
     private RecyclerView recyclerView;
+    private ArrayList<String> registration_ids = new ArrayList<>();
 
     public NoticeFragment() {
+
     }
 
     @Nullable
@@ -75,6 +77,10 @@ public class NoticeFragment extends Fragment {
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+        NotificationManagerCompat.from(activity).cancel("notice", 0);
+        NotificationManagerCompat.from(activity).cancel(2);
+
+
         recyclerView = view.findViewById(R.id.fragment_notice_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(inflater.getContext()));
         noticeFragmentRecyclerAdapter = new NoticeFragmentRecyclerAdapter(noticeLists);
@@ -85,12 +91,32 @@ public class NoticeFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 noticeLists.clear();
                 for (DataSnapshot item : dataSnapshot.getChildren()) {
-                    NoticeList noticeList = item.getValue(NoticeList.class);
+                    Notice noticeList = item.getValue(Notice.class);
                     noticeList.setCode(item.getKey());
                     noticeLists.add(noticeList);
                 }
                 Collections.reverse(noticeLists);
                 noticeFragmentRecyclerAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        firebaseDatabase.child("Users").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot item : dataSnapshot.getChildren()) {
+                    User user = item.getValue(User.class);
+
+                    Log.d("메세지", user.toString());
+                    if (user.getUid().equals(uid)) {
+                        continue;
+                    }
+                    registration_ids.add(user.getPushToken());
+
+                }
             }
 
             @Override
@@ -104,77 +130,11 @@ public class NoticeFragment extends Fragment {
         make.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                LayoutInflater inflater = getLayoutInflater();
-                View notice = inflater.inflate(R.layout.insert_notice, null);
-                builder.setView(notice);
-                final EditText editTextTitle = notice.findViewById(R.id.edit_title);
-                final EditText editTextContent = notice.findViewById(R.id.edit_content);
-                builder.setPositiveButton("등록", null).setNegativeButton("취소", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                    }
-                });
-                final AlertDialog dialog = builder.create();
-                editTextContent.setInputType(InputType.TYPE_CLASS_TEXT);
-                editTextContent.setImeOptions(EditorInfo.IME_ACTION_DONE);
-                editTextContent.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                    @Override
-                    public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                        if (i == EditorInfo.IME_ACTION_DONE) {
-                            int result = insertNotice(editTextTitle, editTextContent);
-                            if (result != -1) {
-                                dialog.dismiss();
-                            }
-                        }
-                        return false;
-                    }
-                });
-                dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                    @Override
-                    public void onShow(DialogInterface dialogInterface) {
-                        Button b = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                        b.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                int result = insertNotice(editTextTitle, editTextContent);
-                                if (result != -1) {
-                                    dialog.dismiss();
-                                }
-                            }
-                        });
-
-                    }
-                });
-                dialog.setCancelable(false);
-                dialog.show();
-            }
-
-            private int insertNotice(EditText editTextTitle, EditText editTextContent) {
-                String title = editTextTitle.getText().toString();
-                String content = editTextContent.getText().toString();
-                if (title.equals("") || content.equals("")) {
-                    Toast.makeText(getContext(), "제목과 내용을 입력하시기 바랍니다.", Toast.LENGTH_SHORT).show();
-                    return -1;
-                }
-                NoticeList notice = new NoticeList();
-                notice.setTitle(title);
-                notice.setContent(content);
-                notice.setUid(uid);
-                SimpleDateFormat sd = new SimpleDateFormat("yyyy년 MM월 dd일");
-                Date date = new Date();
-                String newDate = sd.format(date);
-                notice.setTime(newDate);
-                notice.setTimestamp(date.getTime());
-                notice.setName(PreferenceManager.getString(getContext(), "name") + "(" + PreferenceManager.getString(getContext(), "hospital") + ")");
-                Log.d("등록", notice.toString());
-                firebaseDatabase.child("Notice").push().setValue(notice).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Toast.makeText(getContext(), "공지사항을 등록하였습니다.", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                return 1;
+                Intent intent = new Intent(getActivity(), NoticeActivity.class);
+                intent.putExtra("insert", "insert");
+                intent.putStringArrayListExtra("userList", registration_ids);
+                ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(view.getContext(), R.anim.fromright, R.anim.toleft);
+                startActivity(intent, activityOptions.toBundle());
             }
         });
 
@@ -182,9 +142,9 @@ public class NoticeFragment extends Fragment {
     }
 
     class NoticeFragmentRecyclerAdapter extends RecyclerView.Adapter<NoticeFragmentRecyclerAdapter.NoticeViewHolder> {
-        List<NoticeList> noticeList;
+        List<Notice> noticeList;
 
-        public NoticeFragmentRecyclerAdapter(List<NoticeList> list) {
+        public NoticeFragmentRecyclerAdapter(List<Notice> list) {
             noticeList = list;
         }
 
@@ -203,26 +163,33 @@ public class NoticeFragment extends Fragment {
                     holder.time.setVisibility(View.GONE);
                 }
             }
-            holder.linearLayout.setVisibility(View.GONE);
             holder.delete.setVisibility(View.INVISIBLE);
             holder.update.setVisibility(View.INVISIBLE);
             holder.name.setText(noticeList.get(position).getName());
             holder.title.setText(noticeList.get(position).getTitle());
-            holder.title2.setText(noticeList.get(position).getTitle());
-            holder.content.setText(noticeList.get(position).getContent());
 
             holder.time.setText(noticeList.get(position).getTime());
-            holder.btn.setOnClickListener(new View.OnClickListener() {
+
+            holder.layout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (holder.btn.isChecked()) {
-                        holder.btn.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_keyboard_arrow_up_black_24dp));
-                        holder.linearLayout.setVisibility(View.VISIBLE);
-                    } else {
-                        holder.btn.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_keyboard_arrow_down_black_24dp));
-                        holder.linearLayout.setVisibility(View.GONE);
-
+                    Intent intent = new Intent(getActivity(), NoticeActivity.class);
+                    intent.putExtra("view", "view");
+                    intent.putExtra("title", noticeList.get(position).getTitle());
+                    intent.putExtra("content", noticeList.get(position).getContent());
+                    intent.putExtra("time", noticeList.get(position).getTime());
+                    intent.putExtra("name", noticeList.get(position).getName());
+                    if(noticeList.get(position).getImg()!=null){
+                        ArrayList<String> list = new ArrayList<>();
+                        Set<String> keys = noticeList.get(position).getImg().keySet();
+                        for (String key1 : keys) {
+                            Object value = noticeList.get(position).getImg().get(key1);
+                            list.add(value.toString());
+                        }
+                        intent.putStringArrayListExtra("img", list);
                     }
+                    ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(view.getContext(), R.anim.fromright, R.anim.toleft);
+                    startActivity(intent, activityOptions.toBundle());
                 }
             });
 
@@ -240,6 +207,15 @@ public class NoticeFragment extends Fragment {
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 Map<String, Object> map = new HashMap<>();
                                 map.put(noticeList.get(position).getCode(), null);
+                                if(noticeList.get(position).getImg()!=null && noticeList.get(position).getImg().get("noImg")==null){
+                                    Set<String> keys = noticeList.get(position).getImg().keySet();
+                                    Log.d("코드", noticeList.get(position).getCode()+"");
+                                    for(String key : keys){
+                                        Log.d("코드값", key);
+                                        FirebaseStorage.getInstance().getReference().child("Notice Img").child(noticeList.get(position).getCode()).child(key).delete();
+                                    }
+
+                                }
                                 firebaseDatabase.child("Notice").updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
@@ -259,80 +235,39 @@ public class NoticeFragment extends Fragment {
                 holder.update.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        final AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getContext()));
-
-                        LayoutInflater inflater = getLayoutInflater();
-                        View notice = inflater.inflate(R.layout.insert_notice, null);
-                        builder.setView(notice);
-                        final EditText editTextTitle = notice.findViewById(R.id.edit_title);
-                        editTextTitle.setText(noticeList.get(position).getTitle());
-                        final EditText editTextContent = notice.findViewById(R.id.edit_content);
-
-                        builder.setPositiveButton("수정", null).setNegativeButton("취소", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                            }
-                        });
-                        final AlertDialog dialog = builder.create();
-                        editTextContent.setText(noticeList.get(position).getContent());
-                        editTextContent.setInputType(InputType.TYPE_CLASS_TEXT);
-                        editTextContent.setImeOptions(EditorInfo.IME_ACTION_DONE);
-                        editTextContent.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                            @Override
-                            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                                if (i == EditorInfo.IME_ACTION_DONE) {
-                                    int result = modifyNotice(editTextTitle, editTextContent);
-                                    if (result != -1) {
-                                        dialog.dismiss();
-                                    }
+                        ArrayList<Image> imgList = new ArrayList<>();
+                        Intent intent = new Intent(getActivity(), NoticeActivity.class);
+                        intent.putExtra("modify", "modify");
+                        intent.putStringArrayListExtra("userList", registration_ids);
+                        intent.putExtra("title", noticeList.get(position).getTitle());
+                        intent.putExtra("content", noticeList.get(position).getContent());
+                        intent.putExtra("code", noticeList.get(position).getCode());
+                        if(noticeList.get(position).getImg()!=null){
+                            ArrayList<String> list = new ArrayList<>();
+                            ArrayList<String> deleteKey = new ArrayList<>();
+                            Set<String> keys = noticeList.get(position).getImg().keySet();
+                            for (String key1 : keys) {
+                                if(key1.equals("noImg")){
+                                    break;
+                                }else{
+                                    long id = Long.parseLong(key1);
+                                    Uri uri = Uri.parse(noticeList.get(position).getImg().get(key1));
+                                    String path = "path";
+                                    boolean b = true;
+                                    Image image = new Image(id,uri,path,b);
+                                    imgList.add(image);
+                                    Object value = noticeList.get(position).getImg().get(key1);
+                                    list.add(value.toString());
+                                    deleteKey.add(id+"");
                                 }
-                                return false;
-                            }
-                        });
-                        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                            @Override
-                            public void onShow(DialogInterface dialogInterface) {
-                                Button b = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                                b.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        int result = modifyNotice(editTextTitle, editTextContent);
-                                        if (result != -1) {
-                                            dialog.dismiss();
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                        dialog.setCancelable(false);
-                        dialog.show();
-                    }
 
-                    private int modifyNotice(EditText editTextTitle, EditText editTextContent) {
-                        String title = editTextTitle.getText().toString();
-                        String content = editTextContent.getText().toString();
-                        if (title.equals("") || content.equals("")) {
-                            Toast.makeText(getContext(), "제목과 내용을 입력하시기 바랍니다.", Toast.LENGTH_SHORT).show();
-                            return -1;
-                        }
-                        NoticeList notice = new NoticeList();
-                        notice.setTitle(title);
-                        notice.setContent(content);
-                        notice.setUid(uid);
-                        SimpleDateFormat sd = new SimpleDateFormat("yyyy/MM/dd");
-                        Date date = new Date();
-                        String newDate = sd.format(date);
-                        notice.setTime(newDate);
-                        notice.setName(noticeList.get(position).getName());
-                        Map<String, Object> map = new HashMap<>();
-                        map.put(noticeList.get(position).getCode(), notice);
-                        firebaseDatabase.child("Notice").updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                Toast.makeText(getContext(), "수정하였습니다.", Toast.LENGTH_SHORT).show();
                             }
-                        });
-                        return 1;
+                            intent.putStringArrayListExtra("img", list);
+                            intent.putStringArrayListExtra("deleteKey", deleteKey);
+                            intent.putParcelableArrayListExtra("imgList", imgList);
+                        }
+                        ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(view.getContext(), R.anim.fromright, R.anim.toleft);
+                        startActivity(intent, activityOptions.toBundle());
                     }
                 });
             }
@@ -348,25 +283,18 @@ public class NoticeFragment extends Fragment {
         private class NoticeViewHolder extends RecyclerView.ViewHolder {
             TextView title;
             TextView name;
-            TextView content;
             TextView time;
-            ToggleButton btn;
             ImageView delete;
             ImageView update;
-            LinearLayout linearLayout;
-            TextView title2;
-
+            LinearLayout layout;
             public NoticeViewHolder(View itemView) {
                 super(itemView);
                 title = itemView.findViewById(R.id.notice_title);
-                content = itemView.findViewById(R.id.notice_content);
                 time = itemView.findViewById(R.id.notice_time);
-                btn = itemView.findViewById(R.id.toggle_btn);
                 name = itemView.findViewById(R.id.notice_name);
                 delete = itemView.findViewById(R.id.delete);
                 update = itemView.findViewById(R.id.update);
-                title2 = itemView.findViewById(R.id.notice_title2);
-                linearLayout = itemView.findViewById(R.id.content_layout);
+                layout = itemView.findViewById(R.id.layout_title);
             }
         }
     }

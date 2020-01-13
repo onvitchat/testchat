@@ -98,7 +98,6 @@ public class ChatFragment extends Fragment {
                         countEventListener = new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                Log.d("채팅갯수", dataSnapshot.getChildrenCount() + "");
                                 countMap.put(item.getKey(), dataSnapshot.getChildrenCount());
                             }
 
@@ -120,6 +119,7 @@ public class ChatFragment extends Fragment {
                 }
             };
             databaseReference.child("lastChat").orderByChild("existUsers/"+uid).equalTo(true).addValueEventListener(valueEventListener);
+
         }
 
         @NonNull

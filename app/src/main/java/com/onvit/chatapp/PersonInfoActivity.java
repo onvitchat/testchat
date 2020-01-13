@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.onvit.chatapp.chat.BigPictureActivity;
 import com.onvit.chatapp.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -76,6 +77,15 @@ public class PersonInfoActivity extends AppCompatActivity implements View.OnClic
                 GradientDrawable gradientDrawable = (GradientDrawable) PersonInfoActivity.this.getDrawable(R.drawable.radius);
                 imageView.setBackground(gradientDrawable);
                 imageView.setClipToOutline(true);
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent(PersonInfoActivity.this, BigPictureActivity.class);
+                        intent.putExtra("name", name.getText().toString());
+                        intent.putExtra("uri",user.getUserProfileImageUrl());
+                        startActivity(intent);
+                    }
+                });
 
 
                 LinearLayout modify = findViewById(R.id.info_modi);

@@ -12,9 +12,7 @@
         android:layout_width="80dp"
         android:layout_height="60dp"
         android:layout_margin="10dp"
-        android:paddingEnd="10dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/logo_high" />
+        android:src="@drawable/kcha_logo" />
 
     <RelativeLayout
         android:layout_width="match_parent"

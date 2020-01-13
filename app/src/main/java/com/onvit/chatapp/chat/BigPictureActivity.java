@@ -11,11 +11,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -25,19 +28,26 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.github.chrisbanes.photoview.PhotoView;
+import com.onvit.chatapp.PersonInfoActivity;
 import com.onvit.chatapp.R;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 
-public class BigPictureActivity extends AppCompatActivity {
+public class BigPictureActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int WRITE_EXTERNAL_STORAGE_CODE = 1;
     private Toolbar chatToolbar;
     private PhotoView imageView;
     private LinearLayout imageView2;
+    private ImageView left, right;
+    private ArrayList<String> list = new ArrayList<>();
+    private int position;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,13 +61,53 @@ public class BigPictureActivity extends AppCompatActivity {
         actionBar.setTitle(getIntent().getStringExtra("name"));
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_24dp);
+        left = findViewById(R.id.left_arrow);
+        right = findViewById(R.id.right_arrow);
+        Drawable l = left.getBackground();
+        Drawable r = right.getBackground();
+        l.setAlpha(150);
+        r.setAlpha(150);
+        left.setVisibility(View.GONE);
+        right.setVisibility(View.GONE);
+        if(getIntent().getIntExtra("position", -1) != -1){
+            position = getIntent().getIntExtra("position", -1);
+            list = getIntent().getStringArrayListExtra("list");
+        }
+
         String uri = getIntent().getStringExtra("uri");
 
+        drawImg(uri);
+    }
+
+    private void drawImg(String uri) {
+
+        if(list.size()>0){
+            if(position==0 && list.size()>1){
+                right.setVisibility(View.VISIBLE);
+                left.setVisibility(View.GONE);
+            }else if(position==list.size()-1 && list.size()>1){
+                left.setVisibility(View.VISIBLE);
+                right.setVisibility(View.GONE);
+            }else{
+                right.setVisibility(View.VISIBLE);
+                left.setVisibility(View.VISIBLE);
+            }
+            if(list.size()==1){
+                left.setVisibility(View.GONE);
+                right.setVisibility(View.GONE);
+            }
+            left.setOnClickListener(this);
+            right.setOnClickListener(this);
+        }
         imageView = findViewById(R.id.picture_img);
         imageView2 = findViewById(R.id.img_share);
 
         LinearLayout downImg = findViewById(R.id.img_down);
-        Glide.with(this).load(uri).apply(new RequestOptions().fitCenter()).into(imageView);
+        if(uri.equals("noImg")){
+            Glide.with(this).load(R.drawable.standard_profile).apply(new RequestOptions().fitCenter()).into(imageView);
+        }else{
+            Glide.with(this).load(uri).apply(new RequestOptions().fitCenter()).into(imageView);
+        }
         downImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -152,6 +202,32 @@ public class BigPictureActivity extends AppCompatActivity {
 
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.left_arrow:
+                if(position<=list.size()-1){
+                    position = position -1;
+                    String uri = list.get(position);
+                    drawImg(uri);
+                }
+                if(position==0){
+                    return;
+                }
+                break;
+            case R.id.right_arrow:
+                if(position>=0){
+                    position = position + 1;
+                    String uri = list.get(position);
+                    drawImg(uri);
+                }
+                if(position==list.size()-1){
+                    return;
+                }
+                break;
         }
     }
 }

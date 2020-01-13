@@ -15,5 +15,5 @@
     <item
         android:id="@+id/action_account"
         android:icon="@drawable/ic_shopping_basket_black_24dp"
-        android:title="공동구매"/>
+        android:title="구매"/>
 </menu>

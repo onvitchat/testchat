@@ -17,7 +17,7 @@
         android:layout_marginEnd="10dp"
         android:layout_marginTop="13dp"
         tools:text="50"
-        android:textColor="#FFE400"
+        android:textColor="#2F678C"
         android:textSize="20dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -26,7 +26,7 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/chat_linear_layout"
         android:layout_below="@id/chat_toolbar"
-        android:background="#B2C7D9" />
+        android:background="#DBE1EF" />
     <RelativeLayout
         android:id="@+id/groupMessageActivity_relativelayout"
         android:layout_width="match_parent"
