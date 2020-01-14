@@ -42,7 +42,7 @@ import jxl.Workbook;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private final long VERSION_CODE = 11; // gradle버전이랑 맞춰야됨. firebase remoteconfig도 같이 맞춰야됨.
+    private final long VERSION_CODE = 12; // gradle버전이랑 맞춰야됨. firebase remoteconfig도 같이 맞춰야됨.
 
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private FirebaseAuth firebaseAuth;
