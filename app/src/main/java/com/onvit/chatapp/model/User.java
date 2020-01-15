@@ -10,7 +10,6 @@ public class User implements Comparable<User>, Parcelable {
     private String userProfileImageUrl;
     private String uid;
     private String pushToken;
-    private String comment;
     private String tel;
     private String hospital;
     private String grade;
@@ -26,7 +25,6 @@ public class User implements Comparable<User>, Parcelable {
         userProfileImageUrl = in.readString();
         uid = in.readString();
         pushToken = in.readString();
-        comment = in.readString();
         tel = in.readString();
         hospital = in.readString();
         grade = in.readString();
@@ -53,7 +51,6 @@ public class User implements Comparable<User>, Parcelable {
                 ", userProfileImageUrl='" + userProfileImageUrl + '\'' +
                 ", uid='" + uid + '\'' +
                 ", pushToken='" + pushToken + '\'' +
-                ", comment='" + comment + '\'' +
                 ", tel='" + tel + '\'' +
                 ", hospital='" + hospital + '\'' +
                 ", grade='" + grade + '\'' +
@@ -82,14 +79,6 @@ public class User implements Comparable<User>, Parcelable {
 
     public void setTel(String tel) {
         this.tel = tel;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
     }
 
     public String getPushToken() {
@@ -153,7 +142,6 @@ public class User implements Comparable<User>, Parcelable {
         parcel.writeString(userProfileImageUrl);
         parcel.writeString(uid);
         parcel.writeString(pushToken);
-        parcel.writeString(comment);
         parcel.writeString(tel);
         parcel.writeString(hospital);
         parcel.writeString(grade);

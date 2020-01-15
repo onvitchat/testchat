@@ -40,7 +40,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getNotification() != null) {
 
         }
-
+        Log.d("메세지", "111");
+        Log.d("메세지", remoteMessage.getData().toString());
         sendNotification(remoteMessage);
 //        final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 //        FirebaseDatabase.getInstance().getReference().child("lastChat").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -87,6 +88,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private void sendNotification(RemoteMessage remoteMessage) { // 포그라운드일때만 여기 거쳐감
         Intent intent = new Intent(this, SplashActivity.class);//알림 누르면 열리는 창
         String tag = remoteMessage.getData().get("tag");
+        String channelId;
         int id = 1;
         if(tag.equals("normalChat")){
             id=0;
@@ -95,11 +97,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }else if(tag.equals("notice")){
             id=2;
         }
+        int v = getSharedPreferences(getPackageName(), MODE_PRIVATE).getInt("vibrate", 0);
+        if(v==0){
+            channelId = getString(R.string.vibrate);
+        }else{
+            channelId = getString(R.string.noVibrate);
+        }
+
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("tag", tag);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT); // 원격으로 인텐트 실행하는거 앱이 꺼져있어도 실행하는거
-        String channelId = getString(R.string.default_notification_channel_id);
+
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.mipmap.ic_kcha)
@@ -107,25 +116,37 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setContentText(remoteMessage.getData().get("text"))
                         .setAutoCancel(true) // 누르면 알림 없어짐
                         .setSound(defaultSoundUri)
-                        .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
-                        .setVibrate(new long[]{0L})
+//                        .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
+//                        .setVibrate(new long[]{0, 1000})
 //                        .setFullScreenIntent(pendingIntent, true)
                         .setContentIntent(pendingIntent);
-
+        if(v==0){
+            notificationBuilder.setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND).setVibrate(new long[]{0, 500});
+        }
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Since android Oreo notification channel is needed.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId,
-                    "Channel human readable title",
-                    NotificationManager.IMPORTANCE_LOW);
-//            NotificationManager.IMPORTANCE_HIGH => 팝업창뜨게하는거
-            channel.setVibrationPattern(new long[]{0}); // 진동없애는거? 삭제하고 다시 깔아야 적용.
-            channel.enableVibration(true);
-            notificationManager.createNotificationChannel(channel);
-
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            NotificationChannel channel = new NotificationChannel(channelId,
+//                    "Channel human readable title",
+//                    NotificationManager.IMPORTANCE_DEFAULT);
+////            NotificationManager.IMPORTANCE_HIGH => 팝업창뜨게하는거
+//            channel.setVibrationPattern(new long[]{0, 1000}); // 진동없애는거? 삭제하고 다시 깔아야 적용.
+//            channel.enableVibration(true);
+//            notificationManager.createNotificationChannel(channel);
+//
+//        }
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            NotificationChannel channel = new NotificationChannel(getString(R.string.noVibrate),
+//                    "알림설정",
+//                    NotificationManager.IMPORTANCE_LOW);
+////            NotificationManager.IMPORTANCE_HIGH => 팝업창뜨게하는거
+//            channel.setVibrationPattern(new long[]{0, 1000}); // 진동없애는거? 삭제하고 다시 깔아야 적용.
+//            channel.enableVibration(true);
+//            notificationManager.createNotificationChannel(channel);
+//        }
 
         notificationManager.notify(id /* ID of notification */, notificationBuilder.build());
             //배지카운트표시

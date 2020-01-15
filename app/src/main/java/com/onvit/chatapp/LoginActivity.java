@@ -49,7 +49,6 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener authStateListener;
     private ValueEventListener valueEventListener;
     private AlertDialog dialog;
-    private final static int PERMISSION_REQUEST_CODE = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -134,19 +134,31 @@ public class NoticeActivity extends AppCompatActivity implements View.OnClickLis
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         registration_ids = getIntent().getStringArrayListExtra("userList");
         if(getIntent().getStringExtra("modify")!=null){
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(NoticeActivity.this);
-            builder.setMessage("수정 시 새 이미지를 첨부하면 원래 올렸던 사진은 삭제됩니다.");
-            builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                }
-            });
-            AlertDialog dialog = builder.create();
-            dialog.setCancelable(false);
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
-
+            if(getSharedPreferences(getPackageName(), MODE_PRIVATE).getInt("modify", 0)==0){
+                AlertDialog.Builder builder = new AlertDialog.Builder(NoticeActivity.this);
+                builder.setTitle("수정 시 새 이미지를 첨부하면 원래 올렸던 사진은 삭제됩니다.");
+                String[] check = {"다시보지않기"};
+                boolean[] checkedItems = {false};
+                builder.setMultiChoiceItems(check, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        if(isChecked){
+                            getSharedPreferences(getPackageName(), MODE_PRIVATE).edit().putInt("modify", 1).apply();
+                        }else{
+                            getSharedPreferences(getPackageName(), MODE_PRIVATE).edit().putInt("modify", 0).apply();
+                        }
+                    }
+                });
+                builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.show();
+            }
             noticeName = "공지사항 수정";
             insertNotice.setText("공지사항수정");
             title.setText(getIntent().getStringExtra("title"));
@@ -241,7 +253,12 @@ public class NoticeActivity extends AppCompatActivity implements View.OnClickLis
                 dialog.setCancelable(false);
                 dialog.show();
                 tx.setText("공지사항을 등록하는 중입니다.");
-                insertNotices(title, content,dialog, tx);
+                tx.post(new Runnable() { // 약간의 딜레이를 주어서 뷰처리 먼저 실행하고 난 다음에 아래꺼 처리하게.
+                    @Override
+                    public void run() {
+                        insertNotices(title, content,dialog, tx);
+                    }
+                });
                 break;
             case "공지사항수정" :
                 NoticeActivity.this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
@@ -254,7 +271,12 @@ public class NoticeActivity extends AppCompatActivity implements View.OnClickLis
                 dialog2.setCancelable(false);
                 dialog2.show();
                 tx2.setText("공지사항을 수정하는 중입니다.");
-                modifyNotice(title, content,dialog2, tx2);
+                tx2.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        modifyNotice(title, content,dialog2, tx2);
+                    }
+                });
                 break;
             case "이미지첨부" :
                 Intent intent = new Intent(this, GalleryActivity.class);
@@ -558,10 +580,10 @@ public class NoticeActivity extends AppCompatActivity implements View.OnClickLis
         String hospital = PreferenceManager.getString(NoticeActivity.this, "hospital");
         NotificationModel notificationModel = new NotificationModel();
         notificationModel.registration_ids = registration_ids;
-        notificationModel.notification.title = userName+"("+hospital+")";
-        notificationModel.notification.text = userName+"("+hospital+")"+"님이 새로운 공지를 등록하였습니다.";
-        notificationModel.notification.tag = "notice";
-        notificationModel.notification.click_action = "GroupMessage";
+//        notificationModel.notification.title = userName+"("+hospital+")";
+//        notificationModel.notification.text = userName+"("+hospital+")"+"님이 새로운 공지를 등록하였습니다.";
+//        notificationModel.notification.tag = "notice";
+//        notificationModel.notification.click_action = "GroupMessage";
 
         notificationModel.data.title = userName;
         notificationModel.data.text = userName+"님이 새로운 공지를 등록하였습니다.";
@@ -742,7 +764,7 @@ public class NoticeActivity extends AppCompatActivity implements View.OnClickLis
                     });
                     break;
             }
-            Glide.with(NoticeActivity.this).load(imgPath.get(position)).apply(new RequestOptions().centerCrop()).into(holder.imageView);
+            Glide.with(NoticeActivity.this).load(imgPath.get(position)).placeholder(R.drawable.ic_base_img_24dp).apply(new RequestOptions().centerCrop()).into(holder.imageView);
             GradientDrawable gradientDrawable = (GradientDrawable) NoticeActivity.this.getDrawable(R.drawable.radius);
             holder.imageView.setBackground(gradientDrawable);
             holder.imageView.setClipToOutline(true);

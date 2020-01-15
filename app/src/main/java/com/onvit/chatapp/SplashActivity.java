@@ -1,10 +1,16 @@
 package com.onvit.chatapp;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -41,8 +47,6 @@ import jxl.Sheet;
 import jxl.Workbook;
 
 public class SplashActivity extends AppCompatActivity {
-
-    private final long VERSION_CODE = 12; // gradle버전이랑 맞춰야됨. firebase remoteconfig도 같이 맞춰야됨.
 
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private FirebaseAuth firebaseAuth;
@@ -90,7 +94,20 @@ public class SplashActivity extends AppCompatActivity {
     void versionCheck() {
         long versionCode = mFirebaseRemoteConfig.getLong("version_code"); // 이거 true로 보내면 서버점검중이라고 띄울 수 있음.
         String updateMessage = mFirebaseRemoteConfig.getString("update_message");
-        if (versionCode != VERSION_CODE) {
+        PackageInfo p = null;
+        try {
+            p = getPackageManager().getPackageInfo(getPackageName(),0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        long version = 0;
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.P){
+            version = p.getLongVersionCode();
+        }else{
+            version = p.versionCode;
+        }
+        Log.d("버전코드", version+"");
+        if (versionCode != version) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(updateMessage).setPositiveButton("확인", new DialogInterface.OnClickListener() {
                 @Override
@@ -109,8 +126,32 @@ public class SplashActivity extends AppCompatActivity {
             dialog.setCancelable(false);
             dialog.show();
         } else {
+            createNotificationChannel();
             initSplash();
 
+        }
+    }
+
+    private void createNotificationChannel(){
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(getString(R.string.vibrate),
+                    "진동",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setVibrationPattern(new long[]{0, 500}); // 진동없애는거? 삭제하고 다시 깔아야 적용.
+            channel.enableVibration(true);
+            notificationManager.createNotificationChannel(channel);
+
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(getString(R.string.noVibrate),
+                    "무음",
+                    NotificationManager.IMPORTANCE_LOW);
+            channel.setVibrationPattern(new long[]{0}); // 진동없애는거? 삭제하고 다시 깔아야 적용.
+            channel.enableVibration(true);
+            notificationManager.createNotificationChannel(channel);
         }
     }
 

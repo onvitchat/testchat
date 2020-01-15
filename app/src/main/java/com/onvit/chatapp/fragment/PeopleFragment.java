@@ -118,7 +118,7 @@ public class PeopleFragment extends Fragment {
             if(userList.get(position).getUserProfileImageUrl().equals("noImg")){
                 Glide.with(holder.itemView.getContext()).load(R.drawable.standard_profile).apply(new RequestOptions().centerCrop()).into(holder.imageView);
             }else{
-                Glide.with(holder.itemView.getContext()).load(userList.get(position).getUserProfileImageUrl()).apply(new RequestOptions().centerCrop()).into(holder.imageView);
+                Glide.with(holder.itemView.getContext()).load(userList.get(position).getUserProfileImageUrl()).placeholder(R.drawable.standard_profile).apply(new RequestOptions().centerCrop()).into(holder.imageView);
             }
             GradientDrawable gradientDrawable = (GradientDrawable) getContext().getDrawable(R.drawable.radius);
             holder.imageView.setBackground(gradientDrawable);

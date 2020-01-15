@@ -1,6 +1,7 @@
 package com.onvit.chatapp.fragment;
 
 import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -11,10 +12,13 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -22,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.onvit.chatapp.MainActivity;
+import com.onvit.chatapp.NoticeActivity;
 import com.onvit.chatapp.PreferenceManager;
 import com.onvit.chatapp.R;
 import com.onvit.chatapp.chat.GroupMessageActivity;
@@ -41,6 +46,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 
 public class ChatFragment extends Fragment {
@@ -55,6 +61,7 @@ public class ChatFragment extends Fragment {
     private List<String> keys = new ArrayList<>();
     private List<String> count = new ArrayList<>();
     private String uid;
+    private ToggleButton btn;
     private List<String> userCount = new ArrayList<>();
     public ChatFragment() {
 
@@ -69,6 +76,29 @@ public class ChatFragment extends Fragment {
         activity.setSupportActionBar(chatToolbar);
         ActionBar actionBar = activity.getSupportActionBar();
         actionBar.setTitle("단체 채팅");
+
+        btn = view.findViewById(R.id.vibrate_btn);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(btn.isChecked()){
+                    btn.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_notifications_vibrate));
+                    activity.getSharedPreferences(activity.getPackageName(), Context.MODE_PRIVATE).edit().putInt("vibrate", 0).apply();
+                    Toast.makeText(activity,"앱의 알림이 설정되었습니다.", Toast.LENGTH_SHORT).show();
+                }else{
+                    btn.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_notifications_no_vibrate));
+                    activity.getSharedPreferences(activity.getPackageName(), Context.MODE_PRIVATE).edit().putInt("vibrate", 1).apply();
+                    Toast.makeText(activity,"앱의 알림이 해제되었습니다.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        if(activity.getSharedPreferences(activity.getPackageName(), Context.MODE_PRIVATE).getInt("vibrate",0)==0){
+            btn.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_notifications_vibrate));
+            btn.setChecked(true);
+        }else{
+            btn.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_notifications_no_vibrate));
+            btn.setChecked(false);
+        }
 
         RecyclerView recyclerView = view.findViewById(R.id.chatfragment_recyclerview);
         recyclerView.setAdapter(chatRecyclerViewAdapter);
@@ -170,41 +200,46 @@ public class ChatFragment extends Fragment {
                 @Override
                 public void onClick(final View view) {
                         //채팅방들어갈때 안읽은 메세지들 모두 읽음으로 처리해서 넘어감.
-                        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                        databaseReference.child("groupChat").child(keys.get(position)).child("comments").orderByChild("readUsers/" + uid).equalTo(false)
-                                .addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                if (dataSnapshot == null) {
-                                    return;
-                                }
-                                Map<String, Object> map = new HashMap<>();
-                                for (DataSnapshot item : dataSnapshot.getChildren()) {
-                                    ChatModel.Comment comment = item.getValue(ChatModel.Comment.class);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    View noticeView = getLayoutInflater().from(getContext()).inflate(R.layout.access,null);
+                    builder.setView(noticeView);
+                    final AlertDialog dialog = builder.create();
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.setCancelable(false);
+                    dialog.show();
+                    databaseReference.child("groupChat").child(keys.get(position)).child("comments").orderByChild("readUsers/" + uid).equalTo(false)
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            Map<String, Object> map = new HashMap<>();
+                            for (DataSnapshot item : dataSnapshot.getChildren()) {
+                                ChatModel.Comment comment = item.getValue(ChatModel.Comment.class);
+                                if (comment != null) {
                                     comment.readUsers.put(uid, true);
-                                    map.put(item.getKey(), comment);
+                                    map.put(Objects.requireNonNull(item.getKey()), comment);
                                 }
-                                databaseReference.child("groupChat").child(keys.get(position)).child("comments").updateChildren(map).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Intent intent = null;
-                                        intent = new Intent(view.getContext(), GroupMessageActivity.class);
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                                        intent.putExtra("toRoom", keys.get(position)); // 방이름
-                                        intent.putExtra("chatCount", (Long) countMap.get(keys.get(position)));// 채팅숫자
-                                        ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(view.getContext(), R.anim.fromright, R.anim.toleft);
-                                        startActivity(intent, activityOptions.toBundle());
-                                        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                                    }
-                                });
-
                             }
+                            databaseReference.child("groupChat").child(keys.get(position)).child("comments").updateChildren(map).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Intent intent = null;
+                                    intent = new Intent(view.getContext(), GroupMessageActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                    intent.putExtra("toRoom", keys.get(position)); // 방이름
+                                    intent.putExtra("chatCount", (Long) countMap.get(keys.get(position)));// 채팅숫자
+                                    ActivityOptions activityOptions = ActivityOptions.makeCustomAnimation(view.getContext(), R.anim.fromright, R.anim.toleft);
+                                    startActivity(intent, activityOptions.toBundle());
+                                    dialog.dismiss();
+                                }
+                            });
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                        }
 
-                            }
-                        });
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             });
 
