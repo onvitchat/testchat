@@ -1,4 +1,4 @@
-package com.onvit.chatapp;
+package com.onvit.chatapp.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -1,4 +1,4 @@
-package com.onvit.chatapp;
+package com.onvit.chatapp.contact;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -17,6 +17,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.onvit.chatapp.R;
+import com.onvit.chatapp.SignUpActivity;
 import com.onvit.chatapp.chat.BigPictureActivity;
 import com.onvit.chatapp.model.User;
 import com.google.firebase.auth.FirebaseAuth;

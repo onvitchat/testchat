@@ -29,13 +29,13 @@
         android:roundIcon="@mipmap/ic_kcha_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.StatusBar">
-        <activity android:name=".NoticeActivity"
+        <activity android:name=".notice.NoticeActivity"
             android:windowSoftInputMode="adjustResize"></activity>
         <activity android:name=".certification.CertificateActivity" />
         <activity android:name=".ad.ADActivity" />
         <activity android:name=".chat.BigPictureActivity" />
         <activity
-            android:name=".PersonInfoActivity"
+            android:name=".contact.PersonInfoActivity"
             android:theme="@style/AppTheme.StatusBar" />
         <activity android:name=".chat.SelectGroupChatActivity" />
         <activity

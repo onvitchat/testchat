@@ -1,15 +1,13 @@
-package com.onvit.chatapp.fragment;
+package com.onvit.chatapp.chat;
 
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,8 +24,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.onvit.chatapp.MainActivity;
-import com.onvit.chatapp.NoticeActivity;
-import com.onvit.chatapp.PreferenceManager;
 import com.onvit.chatapp.R;
 import com.onvit.chatapp.chat.GroupMessageActivity;
 import com.onvit.chatapp.model.LastChat;

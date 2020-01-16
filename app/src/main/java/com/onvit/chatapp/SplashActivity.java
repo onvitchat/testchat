@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +32,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.onvit.chatapp.model.KCHA;
 import com.onvit.chatapp.model.User;
+import com.onvit.chatapp.util.PreferenceManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -92,7 +92,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     void versionCheck() {
-        long versionCode = mFirebaseRemoteConfig.getLong("version_code"); // 이거 true로 보내면 서버점검중이라고 띄울 수 있음.
+        long versionCode = mFirebaseRemoteConfig.getLong("version_code");
         String updateMessage = mFirebaseRemoteConfig.getString("update_message");
         PackageInfo p = null;
         try {

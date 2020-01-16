@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
@@ -46,12 +45,15 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.onvit.chatapp.model.Notice;
 import com.onvit.chatapp.model.User;
+import com.onvit.chatapp.util.PreferenceManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SignUpActivity extends AppCompatActivity {
     public static final int REQUEST_CODE = 1000;
@@ -458,6 +460,7 @@ public class SignUpActivity extends AppCompatActivity {
             tPassword.setError("");
             tHospital.setError("");
             tName.setError("이름을 입력하세요.");
+            Toast.makeText(SignUpActivity.this, "이름을 입력하세요.", Toast.LENGTH_SHORT).show();
             return true;
         }
         if (hospital.getText().toString().replace(" ", "").equals("")) {
@@ -466,6 +469,7 @@ public class SignUpActivity extends AppCompatActivity {
             tPassword.setError("");
             tName.setError("");
             tHospital.setError("병원을 입력하세요.");
+            Toast.makeText(SignUpActivity.this, "병원을 입력하세요.", Toast.LENGTH_SHORT).show();
             return true;
         }
         if (tel.getText().toString().replace(" ", "").equals("")) {
@@ -474,14 +478,16 @@ public class SignUpActivity extends AppCompatActivity {
             tHospital.setError("");
             tName.setError("");
             tTel.setError("전화번호을 입력하세요.");
+            Toast.makeText(SignUpActivity.this, "전화번호을 입력하세요.", Toast.LENGTH_SHORT).show();
             return true;
         }
-        if (email.getText().toString().replace(" ", "").equals("")) {
+        if (email.getText().toString().replace(" ", "").equals("") || checkEmail(email.getText().toString())) {
             tName.setError("");
             tTel.setError("");
             tPassword.setError("");
             tHospital.setError("");
-            tEmail.setError("이메일을 입력하세요.");
+            tEmail.setError("이메일을 형식에 맞게 입력하세요.");
+            Toast.makeText(SignUpActivity.this, "이메일을 형식에 맞게 입력하세요.", Toast.LENGTH_SHORT).show();
             return true;
         }
         if (password.getText().toString().replace(" ", "").equals("") || password.getText().length() < 6) {
@@ -490,6 +496,7 @@ public class SignUpActivity extends AppCompatActivity {
             tName.setError("");
             tHospital.setError("");
             tPassword.setError("비밀번호를 6자리 이상으로 입력하세요.");
+            Toast.makeText(SignUpActivity.this, "비밀번호를 6자리 이상으로 입력하세요.", Toast.LENGTH_SHORT).show();
             return true;
         }
         return false;
@@ -532,20 +539,27 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            profileImageView.setImageURI(data.getData()); // 회원가입에 있는 이미지뷰를 바꿈
             imageUri = data.getData();//이미지 경로 원본
+            Log.d("이미지 경로", imageUri.toString());
             filePath = getRealPathFromURI(imageUri);
+            if(filePath==null){
+                Toast.makeText(SignUpActivity.this, "지원하지 않는 이미지 형식입니다.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Log.d("이미지 경로", filePath);
+            profileImageView.setImageURI(data.getData()); // 회원가입에 있는 이미지뷰를 바꿈
         }
     }
 
     private String getRealPathFromURI(Uri fileUri) {
         String result;
-        Cursor cursor = getContentResolver().query(fileUri, null, null,null,null);
+        String []proj = {MediaStore.Images.Media.DATA};
+        Cursor cursor = getContentResolver().query(fileUri, proj, null,null,null);
         if(cursor==null){
             result = fileUri.getPath();
         }else{
             cursor.moveToFirst();
-            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            int idx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             result = cursor.getString(idx);
             cursor.close();
         }
@@ -593,5 +607,16 @@ public class SignUpActivity extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private boolean checkEmail(String email){
+        boolean result = true;
+        String regex = "^[_a-zA-Z0-9-\\.]+@[\\.a-zA-Z0-9-]+\\.[a-zA-Z]+$";
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(email);
+        if(m.matches()){
+            result = false;
+        }
+        return result;
     }
 }

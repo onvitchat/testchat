@@ -1,4 +1,4 @@
-package com.onvit.chatapp.fragment;
+package com.onvit.chatapp.contact;
 
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.onvit.chatapp.MainActivity;
-import com.onvit.chatapp.PersonInfoActivity;
 import com.onvit.chatapp.R;
 import com.onvit.chatapp.model.User;
 import com.google.firebase.auth.FirebaseAuth;

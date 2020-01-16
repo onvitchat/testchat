@@ -78,7 +78,7 @@
                         android:id="@+id/signupActivity_edittext_tel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="전화번호"
+                        android:hint="전화번호(숫자만 입력해주세요.)"
                         android:inputType="phone" />
 
                 </com.google.android.material.textfield.TextInputLayout>
@@ -126,7 +126,7 @@
                         android:id="@+id/signupActivity_edittext_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="비밀번호"
+                        android:hint="비밀번호(6자리이상으로 입력하세요.)"
                         android:inputType="textPassword" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>

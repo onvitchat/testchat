@@ -68,8 +68,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.onvit.chatapp.LoginActivity;
-import com.onvit.chatapp.PersonInfoActivity;
-import com.onvit.chatapp.PreferenceManager;
+import com.onvit.chatapp.contact.PersonInfoActivity;
+import com.onvit.chatapp.util.PreferenceManager;
 import com.onvit.chatapp.R;
 import com.onvit.chatapp.model.ChatModel;
 import com.onvit.chatapp.model.NotificationModel;
@@ -179,19 +179,6 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
         getMessageList();
         keyboardController();
 
-        if (commentCount == 0) {
-            if (getIntent().getStringExtra("shareText") != null) {
-                shareText = getIntent().getStringExtra("shareText");
-                getIntent().removeExtra("shareText");
-                sendMessage(shareText);
-            }
-            if (getIntent().getParcelableExtra("shareUri") != null) {
-                shareUri = getIntent().getParcelableExtra("shareUri");
-                getIntent().removeExtra("shareUri");
-                sendImg(shareUri);
-            }
-        }
-
     }
 
 
@@ -283,6 +270,24 @@ public class GroupMessageActivity extends AppCompatActivity implements View.OnCl
         recyclerView.setLayoutManager(new LinearLayoutManager(GroupMessageActivity.this));
         recyclerView.setAdapter(mFirebaseAdapter);
         sendFile.setOnClickListener(this);
+
+        sendFile.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (commentCount == 0) {
+                    if (getIntent().getStringExtra("shareText") != null) {
+                        shareText = getIntent().getStringExtra("shareText");
+                        getIntent().removeExtra("shareText");
+                        sendMessage(shareText);
+                    }
+                    if (getIntent().getParcelableExtra("shareUri") != null) {
+                        shareUri = getIntent().getParcelableExtra("shareUri");
+                        getIntent().removeExtra("shareUri");
+                        sendImg(shareUri);
+                    }
+                }
+            }
+        },1000);
     }
 
     private void keyboardController() {

@@ -1,4 +1,4 @@
-package com.onvit.chatapp.fragment;
+package com.onvit.chatapp.notice;
 
 import android.app.ActivityOptions;
 import android.content.DialogInterface;
@@ -13,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,7 +36,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.onvit.chatapp.MainActivity;
-import com.onvit.chatapp.NoticeActivity;
+import com.onvit.chatapp.notice.NoticeActivity;
 import com.onvit.chatapp.R;
 import com.onvit.chatapp.model.Notice;
 import com.onvit.chatapp.model.User;
@@ -46,7 +45,6 @@ import com.vlk.multimager.utils.Image;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

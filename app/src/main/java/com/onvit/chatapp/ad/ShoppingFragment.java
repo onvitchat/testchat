@@ -1,4 +1,4 @@
-package com.onvit.chatapp.fragment;
+package com.onvit.chatapp.ad;
 
 import android.content.Intent;
 import android.os.Bundle;

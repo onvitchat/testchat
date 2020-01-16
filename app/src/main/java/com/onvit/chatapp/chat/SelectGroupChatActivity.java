@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.onvit.chatapp.LoginActivity;
-import com.onvit.chatapp.PreferenceManager;
 import com.onvit.chatapp.R;
 import com.onvit.chatapp.model.LastChat;
 import com.onvit.chatapp.model.ChatModel;
