@@ -1,43 +1,58 @@
 {
   "project_info": {
-    "project_number": "611151918238",
-    "firebase_url": "https://kcha-d1194.firebaseio.com",
-    "project_id": "kcha-d1194",
-    "storage_bucket": "kcha-d1194.appspot.com"
+    "project_number": "746655666042",
+    "firebase_url": "https://kchachat-8f58f.firebaseio.com",
+    "project_id": "kchachat-8f58f",
+    "storage_bucket": "kchachat-8f58f.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:611151918238:android:18e202d645e15f660df78f",
+        "mobilesdk_app_id": "1:746655666042:android:977d62f0a62c38904350c3",
         "android_client_info": {
-          "package_name": "com.onvit.chatapp"
+          "package_name": "com.onvit.kchachatapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "611151918238-0f69m5jmpmmuhe4jgumsh2j4lt8d7qvf.apps.googleusercontent.com",
+          "client_id": "746655666042-8gm29bghpdqriia3oitqijr8j6kn357s.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.onvit.chatapp",
+            "package_name": "com.onvit.kchachatapp",
+            "certificate_hash": "5bb13e8b80da33b982e7661a35afb6762d9c705d"
+          }
+        },
+        {
+          "client_id": "746655666042-80qb9sjdbo5dagus70nsusfp59okl6mc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.onvit.kchachatapp",
             "certificate_hash": "45b0906ce1373aa8fb3d855aa0b86b3e2ca1f000"
           }
         },
         {
-          "client_id": "611151918238-l1a867pogjfp8tmq2q3r49p7ql1pqm1f.apps.googleusercontent.com",
+          "client_id": "746655666042-5t1b7vrlbf0klb4f1h2v0kea5gpjnelq.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCurunZZoCvfVczlp71SIKNxnvi-awudnw"
+          "current_key": "AIzaSyDR_SOTmt4wApfH7P_p8YpB8z8ag_AERzY"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "611151918238-l1a867pogjfp8tmq2q3r49p7ql1pqm1f.apps.googleusercontent.com",
+              "client_id": "746655666042-5t1b7vrlbf0klb4f1h2v0kea5gpjnelq.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "746655666042-2skmf7fdubmhf8f0ujenrgqiqf1b6mq3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.onvit.KchaChat"
+              }
             }
           ]
         }

@@ -3,30 +3,74 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     tools:context=".chat.GroupMessageActivity">
 
-    <include
-        android:id="@+id/chat_toolbar"
-        layout="@layout/app_bar_layout" />
+    <RelativeLayout
+        android:id="@+id/toolbar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#FFFFFF"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/back_arrow"
+            android:layout_width="40dp"
+            android:layout_height="60dp"
+            android:src="@drawable/ic_back_arrow_back_black_24dp"
+            android:layout_alignParentStart="true"
+            android:paddingStart="15dp"/>
+        <TextView
+            android:id="@+id/chatitem_textview_title"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:maxWidth="200dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="채팅방이름"
+            android:gravity="center"
+            android:layout_marginStart="20dp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="20dp"
+            android:layout_toEndOf="@+id/back_arrow"/>
+        <TextView
+            android:id="@+id/chat_p_count"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            tools:text="20명"
+            android:gravity="center"
+            android:layout_marginStart="10dp"
+            android:textStyle="bold"
+            android:textSize="16dp"
+            android:layout_toEndOf="@id/chatitem_textview_title"/>
+        <ImageView
+            android:id="@+id/chat_option"
+            android:layout_width="35dp"
+            android:layout_height="60dp"
+            android:src="@drawable/ic_menu_black_24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="10dp"/>
+    </RelativeLayout>
     <TextView
-        android:id="@+id/people_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="10dp"
-        android:layout_marginTop="13dp"
-        tools:text="50"
-        android:textColor="#2F678C"
-        android:textSize="20dp"/>
-
+        android:id="@+id/line_text"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/toolbar_layout"
+        android:background="#CCCCCC" />
+    <TextView
+        android:id="@+id/line_text2"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="#F2F2F2"
+        android:layout_below="@id/line_text"/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/groupMessageActivity_recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/chat_linear_layout"
-        android:layout_below="@id/chat_toolbar"
-        android:background="#DBE1EF" />
+        android:layout_below="@id/line_text2"
+        android:background="#FFFFFF" />
     <RelativeLayout
         android:id="@+id/groupMessageActivity_relativelayout"
         android:layout_width="match_parent"
@@ -66,35 +110,97 @@
 
     </RelativeLayout>
     <RelativeLayout
+        android:id="@+id/down_load_file"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_above="@+id/chat_linear_layout"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:padding="5dp"
+        android:gravity="center_vertical"
+        android:background="#E6FFFFFF"
+        android:visibility="gone">
+        <ProgressBar
+            android:id="@+id/down_load_file_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/down_load_file_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="파일을 다운로드하는 중입니다..."
+            android:textSize="18sp"
+            android:layout_marginStart="7dp"
+            android:layout_marginTop="2dp"
+            android:textColor="#000000"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_toRightOf="@+id/down_load_file_img"/>
+
+    </RelativeLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/chat_linear_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:background="@android:color/background_light">
-
-        <TextView
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/send_message_line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.85"/>
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/send_file_line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.13"/>
+        <ImageView
             android:id="@+id/send_files_btn"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentStart="true"
-            android:gravity="center"
-            android:text="+"
-            android:textSize="30dp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/send_file_line"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:src="@drawable/ic_plus"/>
 
         <EditText
             android:id="@+id/groupMessageActivity_edittext"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/send_files_btn"
-            android:layout_toStartOf="@id/groupMessageActivity_button"
+            android:background="@android:color/transparent"
+            android:hint="메세지를 입력하세요"
+            android:maxLines="5"
             android:scrollbars="vertical"
-            android:maxLines="5"/>
-        <Button
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/send_message_line"
+            app:layout_constraintStart_toStartOf="@+id/send_file_line"
+            app:layout_constraintTop_toTopOf="parent" />
+        <LinearLayout
             android:id="@+id/groupMessageActivity_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:text="전송" />
-    </RelativeLayout>
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="@id/send_message_line"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:gravity="center"
+            app:layout_constraintBottom_toBottomOf="parent">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/send_button" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#CCCCCC"
+        android:layout_above="@id/chat_linear_layout"/>
 </RelativeLayout>

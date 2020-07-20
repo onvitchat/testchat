@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.onvit.chatapp">
+    package="com.onvit.kchachatapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <meta-data
         android:name="com.google.firebase.messaging.default_notification_icon"
@@ -23,39 +26,107 @@
         android:value="@string/vibrate" />
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_kcha"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_kcha_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme.StatusBar">
-        <activity android:name=".notice.NoticeActivity"
-            android:windowSoftInputMode="adjustResize"></activity>
-        <activity android:name=".certification.CertificateActivity" />
-        <activity android:name=".ad.ADActivity" />
-        <activity android:name=".chat.BigPictureActivity" />
+        android:largeHeap="true"
+        android:theme="@style/AppTheme.StatusBar"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".chat.ViewAllActivity"></activity>
+        <!-- api28? 부터 http주소에 접근하려면 이거 해줘야됨. -->
+        <activity
+            android:name=".chat.SelectPeopleActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".chat.vote.VoteDetailActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".chat.vote.VoteActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".chat.vote.VoteListActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".chat.ImgActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".chat.FileActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".chat.vote.VoteRegistrationActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".chat.ChatSetInfoActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.PopUp" />
+        <activity
+            android:name=".notice.NoticeActivity2"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".notice.NoticeActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".certification.CertificateActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ad.ADActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".chat.BigPictureActivity"
+            android:launchMode="singleTop"/>
         <activity
             android:name=".contact.PersonInfoActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.StatusBar" />
-        <activity android:name=".chat.SelectGroupChatActivity" />
+        <activity
+            android:name=".chat.SelectGroupChatActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".chat.GroupMessageActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.chatStatusBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.StatusBar"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="GroupMessage" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".SignUpActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".LoginActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".SplashActivity">
+        <activity
+            android:name=".SplashActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -69,12 +140,8 @@
                 <data android:mimeType="text/plain" />
                 <data android:mimeType="image/*" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="GroupMessage" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
+
         <service
             android:name=".fcm.MyFirebaseMessagingService"
             android:exported="false">
@@ -85,12 +152,12 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.onvit.chatapp.fileprovider"
+            android:authorities="com.onvit.kchachatapp.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"/>
+                android:resource="@xml/file_paths" />
         </provider>
     </application>
 
